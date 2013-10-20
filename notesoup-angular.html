@@ -51,8 +51,8 @@ input[type=text] {
     border-radius: 6px;
     border: 0;
 }
-button[] {
-    color: white;
+.button {
+    color: white !important;
     background: black;
 }
 </style>
@@ -91,17 +91,17 @@ Notes:.. {{notes}} ..
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
                     ng-model='note.n'>
-                <span class='button small' ng-click='cancelEditTitle(note)'>&nbsp;Cancel</span>
-                <span class='button small' ng-click='saveTitle(note)'>Save&nbsp;</span>
+                <span class='button' ng-click='cancelEditTitle(note)'>&nbsp;Cancel&nbsp;</span>
+                <span class='button' ng-click='saveTitle(note)'>&nbsp;Save&nbsp;</span>
             </span>
         </div>
         <div ng-show='note.d' class='notebody' ng-dblclick='editText(note)'>
             <div ng-show='note.d&&!note._editingText'>{{note.t}}</div>
             <div ng-show='note.d&&note._editingText'>
-                <input type='text' name='noteBody' ng-style='{width:"95%"}'
-                    ng-model='note.t'>
-                <span class='button small' ng-click='cancelEditText(note)'>&nbsp;Cancel</span>
-                <span class='button small' ng-click='saveText(note)'>Save&nbsp;</span>
+                <textarea name='noteBody' ng-style='{width:"95%"}'
+                    ng-model='note.t'></textarea>
+                <span class='button' ng-click='cancelEditText(note)'>&nbsp;Cancel&nbsp;</span>
+                <span class='button' ng-click='saveText(note)'>&nbsp;Save&nbsp;</span>
             </div>
         </div>
     </div>
@@ -167,7 +167,7 @@ function NotebookController($scope, $timeout) {
         if (!id.match(/^note_/)) alert('Bogus note id');
         $scope.draggedNoteId = id.slice(5);
         $scope.draggedNoteElement.style.opacity = 0.4;
-        console.log('dragstart', event);
+        //console.log('dragstart', event);
     };
     $scope.dragover = function(event) {
         $scope.stopEvent(event);
@@ -176,11 +176,11 @@ function NotebookController($scope, $timeout) {
     $scope.dragenter = function(event) {
         // this / e.target is the current hover target.
         event.originalEvent.target.classList.add('over');
-        console.log('dragenter:', event);
+        //console.log('dragenter:', event);
     };
     $scope.dragleave = function(event) {
         event.originalEvent.target.classList.remove('over');
-        console.log('dragleave', event);
+        //console.log('dragleave', event);
     };
     $scope.drag = function(event) { 
         //console.log('drag', event); 
@@ -192,7 +192,7 @@ function NotebookController($scope, $timeout) {
         var target = e.target;
         var id = target.id;
         if (!id.match(/^note_/)) {  // drop on workspace
-            console.log('drop on workspace');
+            //console.log('drop on workspace');
             // update note position
             // BUG: this updates the scope, but not the location of the notes
             // TODO: handle cursor offset within dragged elt
@@ -220,7 +220,7 @@ function NotebookController($scope, $timeout) {
     $scope.dragend = function(event) { 
        // this/e.target is the source node.
         var e = event.originalEvent;
-        console.log('dragend', event);  
+        //console.log('dragend', event);  
         return false;
     };
 
