@@ -31,7 +31,7 @@ body {
     border-radius: 12px;
 }
 .notetitle {
-	font: bold .8em lucida grande, verdana, tahoma, arial, helvetica, sans-serif !important;
+	font: bold .8em;
     font-weight: bold;
 	text-align: left;
 }
@@ -39,13 +39,21 @@ body {
     margin: -0.1em 0.5em 0 0.5em;
     padding: 0.5em 1em 1em 1em;
     background: white;
-	font: normal 0.75em lucida grande, verdana, tahoma, arial, helvetica, sans-serif !important;
+	font-size: 0.8em;
     border-style: solid;
     border-width: 1px;
     border-radius: 0px 0px 6px 6px;
 }
 .over {
-    border: 3px black;
+    border: 1px red dashed;
+}
+input[type=text] {
+    border-radius: 6px;
+    border: 0;
+}
+button[] {
+    color: white;
+    background: black;
 }
 </style>
 </head>
@@ -77,9 +85,25 @@ Notes:.. {{notes}} ..
         <div class='titlebar'
             ng-style='{background:"{{note.b}}", width:"{{note.w}}px"}'>
             <span ng-click='toggleText(note)'>&nbsp;&bull;</span> <!-- need 3 icons -->
-            <span class='notetitle'>{{note.n}}</span>
+            <span class='notetitle' 
+                ng-hide='note._editingTitle' 
+                ng-dblclick='editTitle(note)'>{{note.n}}</span>
+            <span ng-show='note._editingTitle'>
+                <input type='text' name='noteTitle' ng-style='{width:"80%"}'
+                    ng-model='note.n'>
+                <span class='button small' ng-click='cancelEditTitle(note)'>&nbsp;Cancel</span>
+                <span class='button small' ng-click='saveTitle(note)'>Save&nbsp;</span>
+            </span>
         </div>
-        <div class='notebody' ng-show='note.d'>{{note.t}}</div>
+        <div ng-show='note.d' class='notebody' ng-dblclick='editText(note)'>
+            <div ng-show='note.d&&!note._editingText'>{{note.t}}</div>
+            <div ng-show='note.d&&note._editingText'>
+                <input type='text' name='noteBody' ng-style='{width:"95%"}'
+                    ng-model='note.t'>
+                <span class='button small' ng-click='cancelEditText(note)'>&nbsp;Cancel</span>
+                <span class='button small' ng-click='saveText(note)'>Save&nbsp;</span>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -200,7 +224,33 @@ function NotebookController($scope, $timeout) {
         return false;
     };
 
+    $scope.editTitle = function(note) {
+        note._saved_title = note.n;
+        note._editingTitle = 1;
+    };
+    $scope.cancelEditTitle = function(note) {
+        note.n = note._saved_title;
+        delete note._saved_title;
+        delete note._editingTitle;
+    };
+    $scope.saveTitle = function(note) {
+        delete note._saved_title;   // could keep this for undo
+        delete note._editingTitle;
+    };
 
+    $scope.editText = function(note) {
+        note._saved_text = note.t;
+        note._editingText = 1;
+    };
+    $scope.cancelEditText = function(note) {
+        note.t = note._saved_text;
+        delete note._saved_text;
+        delete note._editingText;
+    };
+    $scope.saveText = function(note) {
+        delete note._saved_text;   // could keep this for undo
+        delete note._editingText;
+    };
 };
 </script>
 
