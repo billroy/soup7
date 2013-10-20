@@ -42,7 +42,7 @@ body {
 	font-size: 0.8em;
     border-style: solid;
     border-width: 1px;
-    border-radius: 0px 0px 6px 6px;
+    border-radius: 3px 3px 6px 6px;
 }
 .over {
     border: 1px red dashed;
@@ -51,9 +51,14 @@ input[type=text] {
     border-radius: 6px;
     border: 0;
 }
+textarea {
+    border-radius: 6px;
+    border: 0;
+}
 .button {
     color: white !important;
     background: black;
+    font-size: 0.8em;
 }
 </style>
 </head>
@@ -91,17 +96,20 @@ Notes:.. {{notes}} ..
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
                     ng-model='note.n'>
-                <span class='button' ng-click='cancelEditTitle(note)'>&nbsp;Cancel&nbsp;</span>
-                <span class='button' ng-click='saveTitle(note)'>&nbsp;Save&nbsp;</span>
+                <span ng-style='{width:"80%"}'>
+                    <span class='button' ng-click='cancelEditTitle(note)'>&nbsp;Cancel&nbsp;</span>
+                    <span class='button' ng-click='saveTitle(note)' style='float:right'>&nbsp;Save&nbsp;</span>
+                </span>
             </span>
         </div>
-        <div ng-show='note.d' class='notebody' ng-dblclick='editText(note)'>
+        <div ng-show='note.d' class='notebody' 
+            ng-dblclick='editText(note)'>
             <div ng-show='note.d&&!note._editingText'>{{note.t}}</div>
             <div ng-show='note.d&&note._editingText'>
                 <textarea name='noteBody' ng-style='{width:"95%"}'
                     ng-model='note.t'></textarea>
                 <span class='button' ng-click='cancelEditText(note)'>&nbsp;Cancel&nbsp;</span>
-                <span class='button' ng-click='saveText(note)'>&nbsp;Save&nbsp;</span>
+                <span class='button' ng-click='saveText(note)' style='float:right'>&nbsp;Save&nbsp;</span>
             </div>
         </div>
     </div>
@@ -118,11 +126,14 @@ o:opacity
 
 window.app = angular.module('NoteSoup', ['ui']);
 
-function NotebookController($scope, $timeout) {
+function NotebookController($scope, $timeout, $window) {
     var sampleNotes = [
         {i:'n1', x:100, y:100, n:'first note', t:'text of first note'},
         {i:'n2', x:200, y:200, n:'second note', t:'text of second note', c:'blue'},
-        {i:'n3', x:300, y:300, n:'third note', t:'text of third note', b:'lightgreen'}
+        {i:'n3', x:300, y:300, n:'third note', t:'text of third note', b:'lightgreen'},
+        {i:'n4', x:400, y:400, n:'fourth note', t:'text of fourth note', b:'blue', c:'white'},
+        {i:'n5', x:500, y:500, n:'fifth note', t:'text of fifth note', b:'lightgreen'},
+        {i:'n6', x:600, y:600, n:'sixth note', t:'text of sixth note', b:'magenta'}
     ];
     
     function defaultNote() {
@@ -195,9 +206,9 @@ function NotebookController($scope, $timeout) {
             //console.log('drop on workspace');
             // update note position
             // BUG: this updates the scope, but not the location of the notes
-            // TODO: handle cursor offset within dragged elt
-            $scope.notes[$scope.draggedNoteId].x = e.x - $scope.dragOffsetX;
-            $scope.notes[$scope.draggedNoteId].y = e.y - $scope.dragOffsetY;
+            // TODO: handle page scroll offset
+            $scope.notes[$scope.draggedNoteId].x = e.x - $scope.dragOffsetX + $window.pageXOffset;
+            $scope.notes[$scope.draggedNoteId].y = e.y - $scope.dragOffsetY + $window.pageYOffset;
 
             // TODO: why doesn't Angular move the element when the model updates?
             angular.element($scope.draggedNoteElement).css({
@@ -206,6 +217,8 @@ function NotebookController($scope, $timeout) {
             });
         }
         else {        
+            // TODO: drop on note
+            return;
             var droppedNoteId = id.slice(5);
             console.log('dropped on note', droppedNoteId);
             $scope.notes[droppedNoteId].t += [
@@ -213,8 +226,6 @@ function NotebookController($scope, $timeout) {
                 '<p>', $scope.notes[$scope.draggedNoteId].t, '</p>'
             ].join('');
         }
-        console.log('Note move complete', event);
-        // TODO: drop on note
         return false;
     };
     $scope.dragend = function(event) { 
