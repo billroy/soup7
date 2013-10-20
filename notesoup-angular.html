@@ -72,9 +72,7 @@ Notes:.. {{notes}} ..
             <span ng-click='toggleText(note)'>&gt;</span> <!-- need 3 icons -->
             <span class='notetitle'>{{note.n}}&nbsp;</span>
         </span>
-        <div class='notebody' ng-show='note.d'>
-            {{note.t}}
-        </div>
+        <div class='notebody' ng-show='note.d'>{{note.t}}</div>
     </div>
 </div>
 
@@ -131,11 +129,13 @@ function NotebookController($scope, $timeout) {
     $scope.draggedNoteId = null;
     $scope.dragstart = function(event) {
         var e = event.originalEvent;
+        $scope.dragOffsetX = e.offsetX;
+        $scope.dragOffsetY = e.offsetY;
         $scope.draggedNoteElement = e.target;
         var id = $scope.draggedNoteElement.id;
         if (!id.match(/^note_/)) alert('Bogus note id');
         $scope.draggedNoteId = id.slice(5);
-        e.target.style.opacity = 0.4;
+        $scope.draggedNoteElement.style.opacity = 0.4;
         console.log('dragstart', event);
     };
     $scope.dragover = function(event) {
@@ -156,18 +156,33 @@ function NotebookController($scope, $timeout) {
     };
     $scope.drop = function(event) {
         $scope.stopEvent(event);
-        // update note position
-        // BUG: this updates the scope, but not the location of the notes
-        $scope.notes[$scope.draggedNoteId].x = event.originalEvent.offsetX;
-        $scope.notes[$scope.draggedNoteId].y = event.originalEvent.offsetY;
+        $scope.draggedNoteElement.style.opacity = 1.0;
+        var e = event.originalEvent;
+        var target = e.target;
+        var id = target.id;
+        if (!id.match(/^note_/)) {  // drop on workspace
+            console.log('drop on workspace');
+            // update note position
+            // BUG: this updates the scope, but not the location of the notes
+            // TODO: handle cursor offset within dragged elt
+            $scope.notes[$scope.draggedNoteId].x = e.x - $scope.dragOffsetX;
+            $scope.notes[$scope.draggedNoteId].y = e.y - $scope.dragOffsetY;
 
-        angular.element($scope.draggedNoteElement).css({
-            left: event.originalEvent.offsetX,
-            top: event.originalEvent.offsetY
-        });
-
+            // TODO: why doesn't Angular move the element when the model updates?
+            angular.element($scope.draggedNoteElement).css({
+                left: $scope.notes[$scope.draggedNoteId].x,
+                top: $scope.notes[$scope.draggedNoteId].y
+            });
+        }
+        else {        
+            var droppedNoteId = id.slice(5);
+            console.log('dropped on note', droppedNoteId);
+            $scope.notes[droppedNoteId].t += [
+                '<p>', $scope.notes[$scope.draggedNoteId].n, '</p>\n',
+                '<p>', $scope.notes[$scope.draggedNoteId].t, '</p>'
+            ].join('');
+        }
         console.log('Note move complete', event);
-        // need draggedNoteId
         // TODO: drop on note
         return false;
     };
