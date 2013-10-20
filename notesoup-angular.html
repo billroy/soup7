@@ -16,19 +16,19 @@ body {
     background-color: lightgray;
 }
 .notebook {
-    background-color: lightyellow;
+    background-color: lightgray;
     width: 1024px;
     height:1024px;
 }
 .note {
     position: absolute;
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 8px;
 	text-align: left;
 	cursor: move;
 }
 .titlebar {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 12px;
 }
 .notetitle {
 	font: bold .8em lucida grande, verdana, tahoma, arial, helvetica, sans-serif !important;
@@ -36,7 +36,13 @@ body {
 	text-align: left;
 }
 .notebody {
+    margin: -0.1em 0.5em 0 0.5em;
+    padding: 0.5em 1em 1em 1em;
+    background: white;
 	font: normal 0.75em lucida grande, verdana, tahoma, arial, helvetica, sans-serif !important;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 0px 0px 6px 6px;
 }
 .over {
     border: 3px black;
@@ -57,7 +63,7 @@ body {
     }'>
 Notes:.. {{notes}} ..
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
-        ng-style='{background:"{{note.b}}", color:"{{note.c}}", left:"{{note.x}}px", top:"{{note.y}}px"}'
+        ng-style='{color:"{{note.c}}", left:"{{note.x}}px", top:"{{note.y}}px", width:"{{note.w}}px"}'
         draggable='true'
         ui-event='{
             dragstart:"dragstart($event)", 
@@ -68,10 +74,11 @@ Notes:.. {{notes}} ..
             drop:"drop($event)",
             dragend:"dragend($event)"
         }'>
-        <span class='titlebar'>
-            <span ng-click='toggleText(note)'>&gt;</span> <!-- need 3 icons -->
-            <span class='notetitle'>{{note.n}}&nbsp;</span>
-        </span>
+        <div class='titlebar'
+            ng-style='{background:"{{note.b}}", width:"{{note.w}}px"}'>
+            <span ng-click='toggleText(note)'>&nbsp;&bull;</span> <!-- need 3 icons -->
+            <span class='notetitle'>{{note.n}}</span>
+        </div>
         <div class='notebody' ng-show='note.d'>{{note.t}}</div>
     </div>
 </div>
@@ -124,7 +131,7 @@ function NotebookController($scope, $timeout) {
             e.preventDefault();     // Necessary. Allows us to drop.
         }
     };
-    
+
     $scope.draggedNoteElement = null;
     $scope.draggedNoteId = null;
     $scope.dragstart = function(event) {
