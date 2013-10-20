@@ -1,0 +1,186 @@
+<!doctype HTML>
+<html>
+<!-- Copyright 2013 by Bill Roy.  Use under MIT License. -->
+<head>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script src="http://code.angularjs.org/1.1.5/angular.js"></script>
+<script src="angular-ui.js"></script>
+
+<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap.min.css" rel="stylesheet"/>
+
+
+<style type='text/css'>
+body {
+    background-color: lightgray;
+}
+.notebook {
+    background-color: lightyellow;
+    width: 1024px;
+    height:1024px;
+}
+.note {
+    position: absolute;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 8px;
+	text-align: left;
+	cursor: move;
+}
+.titlebar {
+}
+.notetitle {
+	font: bold .8em lucida grande, verdana, tahoma, arial, helvetica, sans-serif !important;
+    font-weight: bold;
+	text-align: left;
+}
+.notebody {
+	font: normal 0.75em lucida grande, verdana, tahoma, arial, helvetica, sans-serif !important;
+}
+.over {
+    border: 3px black;
+}
+</style>
+</head>
+<body ng-app='NoteSoup'>
+<div ng-controller='NotebookController' class='notebook'
+    droppable='true'
+    ui-event='{
+        dragstart:"dragstart($event)", 
+        drag:"drag($event)",
+        dragover:"dragover($event)",
+        dragenter:"dragenter($event)",
+        dragleave:"dragleave($event)",
+        drop:"drop($event)",
+        dragend:"dragend($event)"
+    }'>
+Notes:.. {{notes}} ..
+    <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
+        ng-style='{background:"{{note.b}}", color:"{{note.c}}", left:"{{note.x}}px", top:"{{note.y}}px"}'
+        draggable='true'
+        ui-event='{
+            dragstart:"dragstart($event)", 
+            drag:"drag($event)",
+            dragover:"dragover($event)",
+            dragenter:"dragenter($event)",
+            dragleave:"dragleave($event)",
+            drop:"drop($event)",
+            dragend:"dragend($event)"
+        }'>
+        <span class='titlebar'>
+            <span ng-click='toggleText(note)'>&gt;</span> <!-- need 3 icons -->
+            <span class='notetitle'>{{note.n}}&nbsp;</span>
+        </span>
+        <div class='notebody' ng-show='note.d'>
+            {{note.t}}
+        </div>
+    </div>
+</div>
+
+<script type='text/javascript'>
+/* Note attributes:
+    a b:background c:color d:displayText e f g h:height i:id
+    j k l m n:title o p q r s t:text u v w:width x:left y:top z:zindex
+s:selected
+e:error editing editable
+o:opacity
+*/
+
+window.app = angular.module('NoteSoup', ['ui']);
+
+function NotebookController($scope, $timeout) {
+    var sampleNotes = [
+        {i:'n1', x:100, y:100, n:'first note', t:'text of first note'},
+        {i:'n2', x:200, y:200, n:'second note', t:'text of second note', c:'blue'},
+        {i:'n3', x:300, y:300, n:'third note', t:'text of third note', b:'lightgreen'}
+    ];
+    
+    function defaultNote() {
+        return {
+            w:150, b:'yellow', c:'black',
+        };
+    };
+
+    $scope.notes = {};
+    angular.forEach(sampleNotes, function(sampleNote, index) {
+        $scope.notes[sampleNote.i] = defaultNote();
+        angular.extend($scope.notes[sampleNote.i], sampleNote);
+    });
+    console.log('Notes:', $scope.notes);
+
+    $scope.toggleText = function(note) {
+        note.d = !note.d;
+    };
+
+    $scope.runClock = function() {
+        $scope.notes['n3'].n = new Date();
+        $scope.notes['n2'].x = $scope.notes['n2'].x + Math.floor((Math.random()*20)-10); 
+        $timeout($scope.runClock, 1000);
+    }
+    $scope.runClock();
+
+    $scope.stopEvent = function(event) {
+        var e = event.originalEvent;
+        if (e.preventDefault) {
+            e.preventDefault();     // Necessary. Allows us to drop.
+        }
+    };
+    
+    $scope.draggedNoteElement = null;
+    $scope.draggedNoteId = null;
+    $scope.dragstart = function(event) {
+        var e = event.originalEvent;
+        $scope.draggedNoteElement = e.target;
+        var id = $scope.draggedNoteElement.id;
+        if (!id.match(/^note_/)) alert('Bogus note id');
+        $scope.draggedNoteId = id.slice(5);
+        e.target.style.opacity = 0.4;
+        console.log('dragstart', event);
+    };
+    $scope.dragover = function(event) {
+        $scope.stopEvent(event);
+        //console.log('dragover', event);
+    };
+    $scope.dragenter = function(event) {
+        // this / e.target is the current hover target.
+        event.originalEvent.target.classList.add('over');
+        console.log('dragenter:', event);
+    };
+    $scope.dragleave = function(event) {
+        event.originalEvent.target.classList.remove('over');
+        console.log('dragleave', event);
+    };
+    $scope.drag = function(event) { 
+        //console.log('drag', event); 
+    };
+    $scope.drop = function(event) {
+        $scope.stopEvent(event);
+        // update note position
+        // BUG: this updates the scope, but not the location of the notes
+        $scope.notes[$scope.draggedNoteId].x = event.originalEvent.offsetX;
+        $scope.notes[$scope.draggedNoteId].y = event.originalEvent.offsetY;
+
+        angular.element($scope.draggedNoteElement).css({
+            left: event.originalEvent.offsetX,
+            top: event.originalEvent.offsetY
+        });
+
+        console.log('Note move complete', event);
+        // need draggedNoteId
+        // TODO: drop on note
+        return false;
+    };
+    $scope.dragend = function(event) { 
+       // this/e.target is the source node.
+        var e = event.originalEvent;
+        console.log('dragend', event);  
+        return false;
+    };
+
+
+};
+</script>
+
+</body>
+</html>
