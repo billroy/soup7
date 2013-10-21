@@ -131,7 +131,7 @@ Notes:..{{newNoteText}}.. {{notes}} ..
         </div>
         <div ng-show='note.d' class='notebody' 
             ng-dblclick='editText(note)'>
-            <div ng-show='note.d&&!note._editingText'>{{note.t}}</div>
+            <div ng-show='note.d&&!note._editingText' ng-bind-html-unsafe='renderBody(note)'></div>
             <div ng-show='note.d&&note._editingText'>
                 <textarea name='noteBody' ng-style='{width:"95%"}'
                     ng-model='note.t'></textarea>
@@ -199,7 +199,6 @@ function NotebookController($scope, $timeout, $window) {
             if (keyParts[0] != $scope.appName) return;
             if (keyParts[1] != path) return;
             var note = JSON.parse(localStorage[key]);
-console.log('loading:', key, note);
             $scope.updateNote(note);
         });
     };
@@ -209,11 +208,9 @@ console.log('loading:', key, note);
         $scope.loadNotesFromLocalStorage($scope.path);
     };
     $scope.loadNotes();
-    console.log('Notes:', $scope.notes);
 
     $scope.saveNote = function(note) {
         var key = $scope.getKey(note);
-console.log('saving', key, note, localStorage);
         localStorage.setItem(key, JSON.stringify(note));
     };
     $scope.deleteNote = function(note) {
@@ -227,7 +224,7 @@ console.log('saving', key, note, localStorage);
         $scope.saveNote(note);
     };
 
-    //$scope.getNote(id, callback) {
+    //$scope.getNote = function(id, callback) {
     //   if ($scope.notes.hasOwnProperty(id)) 
     //        callback($scope.notes[id]);
     //};
@@ -332,18 +329,30 @@ console.log('saving', key, note, localStorage);
         return $scope.nextY;
     };
 
-    // add note
+    // add note via command bar
     $scope.addNoteFromForm = function() {
         // called from commandBar form, so 'this' is $scope here
-        var newNote = {
-            i: $scope.newNoteId(),
-            n: this.newNoteText,
-            x: $scope.nextXPos(),
-            y: $scope.nextYPos()
-        };
-        this.newNoteText = '';
-        this.updateNote(newNote);
-        this.saveNote(this.notes[newNote.i]);
+        if (this.newNoteText[0] == '.') {
+            this.apply(this.newNoteText.slice(1));
+            this.newNoteText = '';
+        }
+        else {
+            if (this.newNoteText.length == 0) return;
+            var lines = this.newNoteText.split('/');
+            var newNote = {
+                i: $scope.newNoteId(),
+                n: lines[0],
+                x: $scope.nextXPos(),
+                y: $scope.nextYPos()
+            };
+            if (lines.length > 1) {
+                newNote.t = lines.slice(1).join('\n');
+                newNote.d = 1;
+            }
+            this.updateNote(newNote);
+            this.saveNote(this.notes[newNote.i]);
+            this.newNoteText = '';
+        }
     };
 
     // edit title of note
@@ -376,6 +385,13 @@ console.log('saving', key, note, localStorage);
         delete note._saved_text;   // could keep this for undo
         delete note._editingText;
         $scope.saveNote(note);
+    };
+
+    $scope.renderBody = function(note) {
+        if (!note.t) return '';
+        if (note.t[0] == '<') return note.t;
+        var lines = note.t.split('\n');
+        return '<p>' + lines.join('</p>\n<p>') + '</p>';
     };
 };
 </script>

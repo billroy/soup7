@@ -15,14 +15,8 @@ BASIC FEATURES
 - Z-handling for new notes
 
 - note id generation
-    numerically ascending
-    calculate $scope.nextNoteId on load
-
-- save workspace attributes
-    - baseNote
-    - workspace color
-- also: save app globals
-    - current workspace
+    - numerically ascending instead of random
+    - calculate $scope.nextNoteId on load
 
 - auto-adjust title width
     http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
@@ -38,9 +32,17 @@ BASIC FEATURES
     - delete note
     - delete all
 
+- set colors
+    - need color picker
+    - workspace background
+    - note default
+    - this note's background
+
 - defaults
     - edit baseNote to set workspace wide note default attributes
     - make baseNote a workspace attribute and save somehow
+
+- note attribute editor
 
 - workspace menu
     - workspace selector
@@ -48,7 +50,13 @@ BASIC FEATURES
         - workspace attribute storage?
             /app/folder/.color
 
-- issue: is it folder, workspace, or notebook?
+- save workspace attributes
+    - baseNote
+    - workspace color
+
+- save app globals
+    - current workspace path
+    - issue: is it folder, workspace, or notebook?
 
 - rendering
     - issue: what goes in .t?
@@ -57,10 +65,10 @@ BASIC FEATURES
         - markdown?
     - render note via function in the template: renderNote(note)
 
-
 - dragdrop
     - note toTop() on drag
         - default note z
+        - reZ on load?
     - drop note on note
     - resize width
     - gridded drag/resize
@@ -83,7 +91,6 @@ BASIC FEATURES
     - set up inbox and trash by default
     - deleteNote -> moveToTrash    
 
-- set colors
 - set opacity
 - integrate with bootstrap?
 - peerJS app
