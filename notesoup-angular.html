@@ -133,6 +133,7 @@ Notes:..{{newNoteText}}.. {{notes}} ..
             dragend:"dragend($event)"
         }'>
         <div class='titlebar'
+            ng-right-click='showNoteMenu(note, $event)'
             ng-style='{background:"{{note.b}}", width:"{{note.w}}px"}'>
             <span ng-click='toggleText(note)'>&nbsp;&bull;
 <!--
@@ -149,9 +150,6 @@ Notes:..{{newNoteText}}.. {{notes}} ..
             <span class='notetitle' 
                 ng-hide='note._editingTitle' 
                 ng-dblclick='editTitle(note)'>{{note.n}}
-                <span ng-click='showNoteMenu(note, $event)'>
-                    XXX
-                </span>
             </span>
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
@@ -163,6 +161,7 @@ Notes:..{{newNoteText}}.. {{notes}} ..
             </span>
         </div>
         <div ng-show='note.d' class='notebody' 
+            ng-right-click='showNoteMenu(note, $event)'
             ng-dblclick='editText(note)'>
             <div ng-show='note.d&&!note._editingText' ng-bind-html-unsafe='renderBody(note)'></div>
             <div ng-show='note.d&&note._editingText'>
@@ -201,6 +200,19 @@ o:opacity
 
 window.app = angular.module('NoteSoup', ['ui']);
 
+// from http://jsfiddle.net/bcaudan/vTZZ5/
+app.directive('ngRightClick', function($parse) {
+    return function(scope, element, attrs) {
+        var fn = $parse(attrs.ngRightClick);
+        element.bind('contextmenu', function(event) {
+            scope.$apply(function() {
+                event.preventDefault();
+                fn(scope, {$event:event});
+            });
+        });
+    };
+});
+
 function NotebookController($scope, $timeout, $window) {
 
     var sampleNotes = [
@@ -221,8 +233,10 @@ function NotebookController($scope, $timeout, $window) {
 
     $scope.nextNoteId = 1;
     $scope.newNoteId = function() {
-        var id = 'N' + $scope.nextNoteId++;
-        return id;
+        while ($scope.notes.hasOwnProperty('N' + $scope.nextNoteId)) {
+            $scope.nextNoteId++;
+        }
+        return 'N' + $scope.nextNoteId;
     };
 
     $scope.updateNote = function(note) {
@@ -418,7 +432,8 @@ function NotebookController($scope, $timeout, $window) {
                 y: $scope.nextYPos()
             };
             if (lines.length > 1) {
-                newNote.t = lines.slice(1).join('\n');
+                if (lines[1][0] == '<') newNote.t = lines.slice(1).join('/');
+                else newNote.t = lines.slice(1).join('\n');
                 newNote.d = 1;
             }
             this.updateNote(newNote);
