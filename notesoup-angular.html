@@ -160,12 +160,13 @@ function NotebookController($scope, $timeout, $window) {
 
     $scope.notes = {};
     $scope.appName = 'notesoup'
-    $scope.folderName = 'inbox';
+    $scope.path = 'inbox';
 
     $scope.updateNote = function(note) {
         if (!$scope.notes.hasOwnProperty(note.i)) {
-            $scope.notes[note.i] = {};
-            angular.extend($scope.notes[note.i], $scope.defaultNote);
+            var newNote = {};
+            newNote.__proto__ = $scope.defaultNote;
+            $scope.notes[note.i] = newNote;
         }
         angular.extend($scope.notes[note.i], note);
     };
@@ -177,27 +178,26 @@ function NotebookController($scope, $timeout, $window) {
     };
     $scope.loadNotes = function() {
         $scope.loadSampleNotes();
-        // $scope.loadNotesFromLocalStorage();
+        // $scope.loadNotesFromLocalStorage($scope.path);
     };
     $scope.loadNotes();
     console.log('Notes:', $scope.notes);
 
     $scope.getKey = function(note) {
-        return [$scope.appName, $scope.folderName, note.i].join('/');
+        return [$scope.appName, $scope.path, note.i].join('/');
     };
-    $scope.loadNotesFromLocalStorage = function(folder) {
+    $scope.loadNotesFromLocalStorage = function(path) {
         var allKeys = Object.keys(localStorage);
         angular.forEach(allKeys, function(key, index) {
             var keyParts = key.split('/');
             if (keyparts[0] != $scope.appName) return;
-            if (keyparts[1] != folder) return;
+            if (keyparts[1] != path) return;
             var note = JSON.parse(localStorage[key]);
 console.log('loading:', key, note);
             $scope.updateNote(note);
         });
     };
     $scope.saveNote = function(note) {
-        // save note to local storage, current folder
         var key = $scope.getKey(note);
 console.log('saving', key, note, localStorage);
         //localStorage.setItem(key, JSON.stringify(note));
@@ -208,7 +208,9 @@ console.log('saving', key, note, localStorage);
     };
 
     $scope.toggleText = function(note) {
-        note.d = !note.d;
+        if (note.d) delete note.d;
+        else note.d = 1;
+        $scope.saveNote(note);
     };
 
     $scope.runClock = function() {
