@@ -187,13 +187,8 @@ function NotebookController($scope, $timeout, $window) {
             $scope.updateNote(sampleNote);
         });
     };
-    $scope.loadNotes = function() {
-        $scope.loadSampleNotes();
-        // $scope.loadNotesFromLocalStorage($scope.path);
-    };
-    $scope.loadNotes();
-    console.log('Notes:', $scope.notes);
 
+    // localStorage key for a note
     $scope.getKey = function(note) {
         return [$scope.appName, $scope.path, note.i].join('/');
     };
@@ -201,17 +196,25 @@ function NotebookController($scope, $timeout, $window) {
         var allKeys = Object.keys(localStorage);
         angular.forEach(allKeys, function(key, index) {
             var keyParts = key.split('/');
-            if (keyparts[0] != $scope.appName) return;
-            if (keyparts[1] != path) return;
+            if (keyParts[0] != $scope.appName) return;
+            if (keyParts[1] != path) return;
             var note = JSON.parse(localStorage[key]);
 console.log('loading:', key, note);
             $scope.updateNote(note);
         });
     };
+
+    $scope.loadNotes = function() {
+        //$scope.loadSampleNotes();
+        $scope.loadNotesFromLocalStorage($scope.path);
+    };
+    $scope.loadNotes();
+    console.log('Notes:', $scope.notes);
+
     $scope.saveNote = function(note) {
         var key = $scope.getKey(note);
 console.log('saving', key, note, localStorage);
-        //localStorage.setItem(key, JSON.stringify(note));
+        localStorage.setItem(key, JSON.stringify(note));
     };
     $scope.deleteNote = function(note) {
         //localStorage.removeItem($scope.getKey(note.id));
@@ -224,12 +227,17 @@ console.log('saving', key, note, localStorage);
         $scope.saveNote(note);
     };
 
+    //$scope.getNote(id, callback) {
+    //   if ($scope.notes.hasOwnProperty(id)) 
+    //        callback($scope.notes[id]);
+    //};
+
     $scope.runClock = function() {
         $scope.notes['n3'].n = new Date();
         $scope.notes['n2'].x = $scope.notes['n2'].x + Math.floor((Math.random()*20)-10); 
         $timeout($scope.runClock, 1000);
     }
-    $scope.runClock();
+    //$scope.runClock();
 
     // drag and drop
     $scope.stopEvent = function(event) {
@@ -312,6 +320,17 @@ console.log('saving', key, note, localStorage);
         var id = 'N' + Math.floor(Math.random()*1000000);
         return id;
     };
+    $scope.nextX = 24;
+    $scope.nextY = 24;
+    $scope.nextIncrement = 24;
+    $scope.nextXPos = function() {
+        $scope.nextX += $scope.nextIncrement;
+        return $scope.nextX;
+    };
+    $scope.nextYPos = function() {
+        $scope.nextY += $scope.nextIncrement;
+        return $scope.nextY;
+    };
 
     // add note
     $scope.addNoteFromForm = function() {
@@ -319,8 +338,8 @@ console.log('saving', key, note, localStorage);
         var newNote = {
             i: $scope.newNoteId(),
             n: this.newNoteText,
-            x: Math.floor(Math.random()*512),
-            y: Math.floor(Math.random()*512),
+            x: $scope.nextXPos(),
+            y: $scope.nextYPos()
         };
         this.newNoteText = '';
         this.updateNote(newNote);

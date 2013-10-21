@@ -11,23 +11,18 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- newNote
-    - command bar / text widget
-    - note id generation
-        - sequence number in /app/folder/.id
-        - or random
-    - position generation
-    - slash-delimited text parsing
+- slash-delimited newNote parsing
+- Z-handling for new notes
 
+- note id generation
+    numerically ascending
+    calculate $scope.nextNoteId on load
 
-- save the notes
-    - localstorage
-    - verify defaults aren't being saved
-    - next: save workspace attributes
-        - baseNote
-        - workspace color
-    - also: save app globals
-        - current workspace
+- save workspace attributes
+    - baseNote
+    - workspace color
+- also: save app globals
+    - current workspace
 
 - auto-adjust title width
     http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
