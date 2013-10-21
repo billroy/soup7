@@ -5,7 +5,6 @@ BUGS
 
 - bug: stale target highlighting after dragdrop
 - bug: why doesn't angular update note position on model update?
-- bug: save and cancel buttons have different background height
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
 
@@ -20,10 +19,6 @@ BASIC FEATURES
     - position generation
     - slash-delimited text parsing
 
-- don't put defaulted attributes in $scope.notes
-    - notes should proto-inherit from baseNote
-    - edit baseNote to set workspace wide note default attributes
-    - make baseNote a workspace attribute and save somehow
 
 - save the notes
     - localstorage
@@ -47,6 +42,10 @@ BASIC FEATURES
     - set workspace color
     - delete note
     - delete all
+
+- defaults
+    - edit baseNote to set workspace wide note default attributes
+    - make baseNote a workspace attribute and save somehow
 
 - workspace menu
     - workspace selector

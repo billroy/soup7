@@ -67,6 +67,8 @@ textarea {
 </style>
 </head>
 <body ng-app='NoteSoup'>
+
+
 <div ng-controller='NotebookController' class='notebook'
     droppable='true'
     ui-event='{
@@ -78,7 +80,16 @@ textarea {
         drop:"drop($event)",
         dragend:"dragend($event)"
     }'>
-Notes:.. {{notes}} ..
+
+    <div class="commandBar">
+        <form name='newNoteEntry' ng-submit='addNoteFromForm()'>
+            <input type='text' name='newNoteText' 
+                ng-style='{width:"80%"}'
+                ng-model='newNoteText'/>
+        </form>
+    </div>
+
+Notes:..{{newNoteText}}.. {{notes}} ..
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
         ng-style='{color:"{{note.c}}", left:"{{note.x}}px", top:"{{note.y}}px", width:"{{note.w}}px"}'
         draggable='true'
@@ -294,6 +305,26 @@ console.log('saving', key, note, localStorage);
         var e = event.originalEvent;
         //console.log('dragend', event);  
         return false;
+    };
+
+    $scope.newNoteId = function() {
+        // TODO: check for collisions and retry
+        var id = 'N' + Math.floor(Math.random()*1000000);
+        return id;
+    };
+
+    // add note
+    $scope.addNoteFromForm = function() {
+        // called from commandBar form, so 'this' is $scope here
+        var newNote = {
+            i: $scope.newNoteId(),
+            n: this.newNoteText,
+            x: Math.floor(Math.random()*512),
+            y: Math.floor(Math.random()*512),
+        };
+        this.newNoteText = '';
+        this.updateNote(newNote);
+        this.saveNote(this.notes[newNote.i]);
     };
 
     // edit title of note
