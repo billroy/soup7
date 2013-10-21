@@ -164,14 +164,13 @@ function NotebookController($scope, $timeout, $window) {
         {i:'n5', x:500, y:500, n:'fifth note', t:'text of fifth note', b:'lightgreen', c:'lightgray'},
         {i:'n6', x:600, y:600, n:'sixth note', t:'text of sixth note', b:'magenta'}
     ];
-    
-    $scope.defaultNote = {
-        w:150, b:'yellow', c:'black',
-    };
 
-    $scope.notes = {};
     $scope.appName = 'notesoup'
     $scope.path = 'inbox';
+    $scope.notes = {};
+    $scope.defaultNote = {
+        w:150, b:'lightgreen', c:'black',
+    };
 
     $scope.updateNote = function(note) {
         if (!$scope.notes.hasOwnProperty(note.i)) {
@@ -192,30 +191,40 @@ function NotebookController($scope, $timeout, $window) {
     $scope.getKey = function(note) {
         return [$scope.appName, $scope.path, note.i].join('/');
     };
-    $scope.loadNotesFromLocalStorage = function(path) {
+    
+    // load notes from localStorage
+    $scope.loadNotes = function() {
         var allKeys = Object.keys(localStorage);
         angular.forEach(allKeys, function(key, index) {
             var keyParts = key.split('/');
             if (keyParts[0] != $scope.appName) return;
-            if (keyParts[1] != path) return;
+            if (keyParts[1] != $scope.path) return;
             var note = JSON.parse(localStorage[key]);
             $scope.updateNote(note);
         });
     };
-
-    $scope.loadNotes = function() {
-        //$scope.loadSampleNotes();
-        $scope.loadNotesFromLocalStorage($scope.path);
-    };
+    //$scope.loadSampleNotes();
     $scope.loadNotes();
 
     $scope.saveNote = function(note) {
         var key = $scope.getKey(note);
-        localStorage.setItem(key, JSON.stringify(note));
+        try {
+            localStorage.setItem(key, JSON.stringify(note));
+        } catch(e) {
+            alert('ERROR: Could not save note!  Increase LocalStorage!');
+        }
     };
+
     $scope.deleteNote = function(note) {
-        //localStorage.removeItem($scope.getKey(note.id));
-        //delete $scope.notes[note.id];
+        localStorage.removeItem($scope.getKey(note.i));
+        delete $scope.notes[note.i];
+    };
+    
+    $scope.deleteAllNotes = function() {
+        if (!confirm('Really delete all notes?')) return;
+        angular.forEach($scope.notes, function(note, index) {
+            $scope.deleteNote(note);
+        });
     };
 
     $scope.toggleText = function(note) {
@@ -333,7 +342,11 @@ function NotebookController($scope, $timeout, $window) {
     $scope.addNoteFromForm = function() {
         // called from commandBar form, so 'this' is $scope here
         if (this.newNoteText[0] == '.') {
-            this.apply(this.newNoteText.slice(1));
+            try {
+                eval('$scope.' + this.newNoteText.slice(1));
+            } catch(e) {
+                console.log('Error:', e);
+            }
             this.newNoteText = '';
         }
         else {
