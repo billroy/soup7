@@ -66,11 +66,25 @@ textarea {
 .noteMenu {
     position: absolute;
     background: white;
+    color: black
     z-index: 10000;
-    margin: 1px;
+    border: 1px solid black;
+    border-radius: 4px;
 }
-.notemenu li {
-    font-size: 2em;
+.noteMenu div {
+    padding: 0 .25em 0 .25em;
+}
+.noteMenu div.highlight {
+    background: steelblue;
+    color: white;
+}
+div.rule {
+    width: 90%;
+    height: 2px;
+    border: 0;
+    background-color: lightgray;
+    margin-top: 6px;
+    margin-bottom: 6px;
 }
 </style>
 </head>
@@ -155,9 +169,14 @@ Notes:..{{newNoteText}}.. {{notes}} ..
     </div>
 
     <div class='noteMenu' ng-show='showingNoteMenu'>
-        <ul>
-            <li ng-repeat='item in noteMenu' ng-click='{{item.x}}'>{{item.t}}</li>
-        </ul>
+        <div ng-repeat='item in noteMenu'>
+            <div ng-hide='item.s'
+                ng-click='{{item.x}}'
+                ng-class='overclass'
+                ng-mouseenter='overclass="highlight"'
+                ng-mouseleave='overclass=""'>{{item.t}}
+            </div>
+            <div ng-show='item.s' class='rule'></div>
     </div>
 
 </div>
@@ -439,9 +458,9 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.noteMenu = [
-        {t:'alert',             x:'alert("hello, world");hideMenu()'},
         {t:'Edit Note Body',    x:'editText(selectedNote);hideMenu()'},
         {t:'Edit Note Title',   x:'editTitle(selectedNote);hideMenu()'},
+        {s:1},
         {t:'Delete Note',       x:'deleteNote(selectedNote);hideMenu()'},
         {t:'Delete all notes',  x:'deleteAllNotes();hideMenu()'},
     ];

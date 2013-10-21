@@ -13,23 +13,24 @@ BASIC FEATURES
 
 - Z-handling for new notes
 
-- note id generation
-    - numerically ascending instead of random
-    - calculate $scope.nextNoteId on load
+- bug: note menu: 
+    - menu separator
+    - right click to come up
+    - click elsewhere to go away
+    - escape to go away
+
+- right-click menu
+    - edit
+    - edit title
+    - delete note
+    - delete all
+    - set note color
+    - set workspace color
 
 - auto-adjust title width
     http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
     - on load
     - after editTitle
-
-- right-click menu
-    - edit
-    - edit title
-    - edit as text
-    - set note color
-    - set workspace color
-    - delete note
-    - delete all
 
 - set colors
     - need color picker
