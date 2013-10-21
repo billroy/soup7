@@ -75,7 +75,7 @@ textarea {
     padding: 0 .25em 0 .25em;
 }
 .noteMenu div.highlight {
-    background: steelblue;
+    background: blue;
     color: white;
 }
 div.rule {
@@ -85,6 +85,12 @@ div.rule {
     background-color: lightgray;
     margin-top: 6px;
     margin-bottom: 6px;
+}
+div.commandbar {
+    background:darkgray;
+}
+div.commandbar>input {
+    width: 512px;
 }
 </style>
 </head>
@@ -104,11 +110,13 @@ div.rule {
     }'>
 
     <div class="commandBar">
-        <form name='newNoteEntry' ng-submit='addNoteFromForm()'>
-            <input type='text' name='newNoteText' 
-                ng-style='{width:"80%"}'
-                ng-model='newNoteText'/>
-        </form>
+        <div>
+            <form name='newNoteEntry' ng-submit='addNoteFromForm()'>
+                <input type='text' name='newNoteText' 
+                    ng-style='{width:"80%"}'
+                    ng-model='newNoteText'/>
+            </form>
+        </div>
     </div>
 
 Notes:..{{newNoteText}}.. {{notes}} ..
@@ -168,7 +176,8 @@ Notes:..{{newNoteText}}.. {{notes}} ..
         </div>
     </div>
 
-    <div class='noteMenu' ng-show='showingNoteMenu'>
+    <div class='noteMenu' ng-show='showingNoteMenu'
+        ng-mouseleave='hideMenu()'>
         <div ng-repeat='item in noteMenu'>
             <div ng-hide='item.s'
                 ng-click='{{item.x}}'
