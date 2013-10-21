@@ -4,6 +4,15 @@ angular-notesoup todo
 - save the notes
     - localstorage
 
+- newNote
+    - command bar / text widget
+    - note id generation
+        /app/folder/.id
+        - or random
+
+- folder color
+    /app/folder/.color
+
 - drop note on note
 - resize width
 - gridded drag/resize

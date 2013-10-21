@@ -59,6 +59,10 @@ textarea {
     color: white !important;
     background: black;
     font-size: 0.8em;
+    border-radius: 3px;    
+}
+.buttons {
+    margin: 0 2em 0 2em;
 }
 </style>
 </head>
@@ -103,13 +107,14 @@ Notes:.. {{notes}} ..
             </span>
             <span class='notetitle' 
                 ng-hide='note._editingTitle' 
-                ng-dblclick='editTitle(note)'>{{note.n}}</span>
+                ng-dblclick='editTitle(note)'>{{note.n}}
+            </span>
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
                     ng-model='note.n'>
-                <span ng-style='{width:"80%"}'>
+                <span class='buttons'>
                     <span class='button' ng-click='cancelEditTitle(note)'>&nbsp;Cancel&nbsp;</span>
-                    <span class='button' ng-click='saveTitle(note)' style='float:right'>&nbsp;Save&nbsp;</span>
+                    <span class='button' ng-click='saveTitle(note)'>&nbsp;Save&nbsp;</span>
                 </span>
             </span>
         </div>
@@ -119,8 +124,10 @@ Notes:.. {{notes}} ..
             <div ng-show='note.d&&note._editingText'>
                 <textarea name='noteBody' ng-style='{width:"95%"}'
                     ng-model='note.t'></textarea>
-                <span class='button' ng-click='cancelEditText(note)'>&nbsp;Cancel&nbsp;</span>
-                <span class='button' ng-click='saveText(note)' style='float:right'>&nbsp;Save&nbsp;</span>
+                <span class='buttons'>
+                    <span class='button' ng-click='cancelEditText(note)'>&nbsp;Cancel&nbsp;</span>
+                    <span class='button' ng-click='saveText(note)'>&nbsp;Save&nbsp;</span>
+                </span>
             </div>
         </div>
     </div>
@@ -147,18 +154,58 @@ function NotebookController($scope, $timeout, $window) {
         {i:'n6', x:600, y:600, n:'sixth note', t:'text of sixth note', b:'magenta'}
     ];
     
-    function defaultNote() {
-        return {
-            w:150, b:'yellow', c:'black',
-        };
+    $scope.defaultNote = {
+        w:150, b:'yellow', c:'black',
     };
 
     $scope.notes = {};
-    angular.forEach(sampleNotes, function(sampleNote, index) {
-        $scope.notes[sampleNote.i] = defaultNote();
-        angular.extend($scope.notes[sampleNote.i], sampleNote);
-    });
+    $scope.appName = 'notesoup'
+    $scope.folderName = 'inbox';
+
+    $scope.updateNote = function(note) {
+        if (!$scope.notes.hasOwnProperty(note.i)) {
+            $scope.notes[note.i] = {};
+            angular.extend($scope.notes[note.i], $scope.defaultNote);
+        }
+        angular.extend($scope.notes[note.i], note);
+    };
+
+    $scope.loadSampleNotes = function() {
+        angular.forEach(sampleNotes, function(sampleNote, index) {
+            $scope.updateNote(sampleNote);
+        });
+    };
+    $scope.loadNotes = function() {
+        $scope.loadSampleNotes();
+        // $scope.loadNotesFromLocalStorage();
+    };
+    $scope.loadNotes();
     console.log('Notes:', $scope.notes);
+
+    $scope.getKey = function(note) {
+        return [$scope.appName, $scope.folderName, note.id].join('/');
+    };
+    $scope.loadNotesFromLocalStorage = function(folder) {
+        var allKeys = Object.keys(localStorage);
+        angular.forEach(allKeys, function(key, index) {
+            var keyParts = key.split('/');
+            if (keyparts[0] != $scope.appName) return;
+            if (keyparts[1] != folder) return;
+            var note = JSON.parse(localStorage[key]);
+console.log('loading:', key, note);
+            $scope.updateNote(note);
+        });
+    };
+    $scope.saveNote = function(note) {
+        // save note to local storage, current folder
+        var key = getKey(note);
+console.log('saving', key, note);
+        //localStorage.setItem(key, JSON.stringify(note));
+    };
+    $scope.deleteNote = function(note) {
+        //localStorage.removeItem(getKey(note.id));
+        //delete $scope.notes[note.id];
+    };
 
     $scope.toggleText = function(note) {
         note.d = !note.d;
@@ -171,13 +218,13 @@ function NotebookController($scope, $timeout, $window) {
     }
     $scope.runClock();
 
+    // drag and drop
     $scope.stopEvent = function(event) {
         var e = event.originalEvent;
         if (e.preventDefault) {
             e.preventDefault();     // Necessary. Allows us to drop.
         }
     };
-
     $scope.draggedNoteElement = null;
     $scope.draggedNoteId = null;
     $scope.dragstart = function(event) {
@@ -246,6 +293,7 @@ function NotebookController($scope, $timeout, $window) {
         return false;
     };
 
+    // edit title of note
     $scope.editTitle = function(note) {
         note._saved_title = note.n;
         note._editingTitle = 1;
@@ -258,8 +306,10 @@ function NotebookController($scope, $timeout, $window) {
     $scope.saveTitle = function(note) {
         delete note._saved_title;   // could keep this for undo
         delete note._editingTitle;
+        $scope.saveNote(note);
     };
 
+    // edit text of note
     $scope.editText = function(note) {
         note._saved_text = note.t;
         note._editingText = 1;
@@ -272,6 +322,7 @@ function NotebookController($scope, $timeout, $window) {
     $scope.saveText = function(note) {
         delete note._saved_text;   // could keep this for undo
         delete note._editingText;
+        $scope.saveNote(note);
     };
 };
 </script>
