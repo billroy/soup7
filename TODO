@@ -1,0 +1,26 @@
+angular-notesoup todo
+
+
+- save the notes
+    - localstorage
+
+- drop note on note
+- resize width
+- gridded drag/resize
+- right-click menu
+    - note
+    - workspace
+
+- better editor
+    - ui-ace
+
+- bug: why doesn't angular update note position on model update?
+- double click dropdown button -> editText
+- bug: save and cancel buttons have different background height
+- c:'white' causes body text to disappear
+
+- set colors
+- set opacity
+- integrate with bootstrap/soup?
+
+- peerJS app
