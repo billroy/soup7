@@ -183,7 +183,7 @@ function NotebookController($scope, $timeout, $window) {
     console.log('Notes:', $scope.notes);
 
     $scope.getKey = function(note) {
-        return [$scope.appName, $scope.folderName, note.id].join('/');
+        return [$scope.appName, $scope.folderName, note.i].join('/');
     };
     $scope.loadNotesFromLocalStorage = function(folder) {
         var allKeys = Object.keys(localStorage);
@@ -198,12 +198,12 @@ console.log('loading:', key, note);
     };
     $scope.saveNote = function(note) {
         // save note to local storage, current folder
-        var key = getKey(note);
-console.log('saving', key, note);
+        var key = $scope.getKey(note);
+console.log('saving', key, note, localStorage);
         //localStorage.setItem(key, JSON.stringify(note));
     };
     $scope.deleteNote = function(note) {
-        //localStorage.removeItem(getKey(note.id));
+        //localStorage.removeItem($scope.getKey(note.id));
         //delete $scope.notes[note.id];
     };
 
@@ -273,6 +273,7 @@ console.log('saving', key, note);
                 left: $scope.notes[$scope.draggedNoteId].x,
                 top: $scope.notes[$scope.draggedNoteId].y
             });
+            $scope.saveNote($scope.notes[$scope.draggedNoteId]);
         }
         else {        
             // TODO: drop on note
