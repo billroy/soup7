@@ -39,7 +39,6 @@ body {
     margin: -0.1em 0.5em 0 0.5em;
     padding: 0.5em 1em 1em 1em;
     background: white;
-	font-size: 0.8em;
     border-style: solid;
     border-width: 1px;
     border-radius: 3px 3px 6px 6px;
@@ -63,6 +62,15 @@ textarea {
 }
 .buttons {
     margin: 0 2em 0 2em;
+}
+.noteMenu {
+    position: absolute;
+    background: white;
+    z-index: 10000;
+    margin: 1px;
+}
+.notemenu li {
+    font-size: 2em;
 }
 </style>
 </head>
@@ -119,6 +127,9 @@ Notes:..{{newNoteText}}.. {{notes}} ..
             <span class='notetitle' 
                 ng-hide='note._editingTitle' 
                 ng-dblclick='editTitle(note)'>{{note.n}}
+                <span ng-click='showNoteMenu(note, $event)'>
+                    XXX
+                </span>
             </span>
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
@@ -142,6 +153,13 @@ Notes:..{{newNoteText}}.. {{notes}} ..
             </div>
         </div>
     </div>
+
+    <div class='noteMenu' ng-show='showingNoteMenu'>
+        <ul>
+            <li ng-repeat='item in noteMenu' ng-click='{{item.x}}'>{{item.t}}</li>
+        </ul>
+    </div>
+
 </div>
 
 <script type='text/javascript'>
@@ -156,6 +174,7 @@ o:opacity
 window.app = angular.module('NoteSoup', ['ui']);
 
 function NotebookController($scope, $timeout, $window) {
+
     var sampleNotes = [
         {i:'n1', x:100, y:100, n:'first note', t:'text of first note'},
         {i:'n2', x:200, y:200, n:'second note', t:'text of second note', c:'blue'},
@@ -172,6 +191,12 @@ function NotebookController($scope, $timeout, $window) {
         w:150, b:'lightgreen', c:'black',
     };
 
+    $scope.nextNoteId = 1;
+    $scope.newNoteId = function() {
+        var id = 'N' + $scope.nextNoteId++;
+        return id;
+    };
+
     $scope.updateNote = function(note) {
         if (!$scope.notes.hasOwnProperty(note.i)) {
             var newNote = {};
@@ -179,6 +204,9 @@ function NotebookController($scope, $timeout, $window) {
             $scope.notes[note.i] = newNote;
         }
         angular.extend($scope.notes[note.i], note);
+
+        var id = parseInt(note.i.slice(1));
+        if (id > $scope.nextNoteId) $scope.nextNoteId = id + 1;
     };
 
     $scope.loadSampleNotes = function() {
@@ -216,7 +244,7 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.deleteNote = function(note) {
-        localStorage.removeItem($scope.getKey(note.i));
+        localStorage.removeItem($scope.getKey(note));
         delete $scope.notes[note.i];
     };
     
@@ -225,6 +253,7 @@ function NotebookController($scope, $timeout, $window) {
         angular.forEach($scope.notes, function(note, index) {
             $scope.deleteNote(note);
         });
+        $scope.nextNoteId = 1;
     };
 
     $scope.toggleText = function(note) {
@@ -271,11 +300,11 @@ function NotebookController($scope, $timeout, $window) {
     };
     $scope.dragenter = function(event) {
         // this / e.target is the current hover target.
-        event.originalEvent.target.classList.add('over');
+        //event.originalEvent.target.classList.add('over');
         //console.log('dragenter:', event);
     };
     $scope.dragleave = function(event) {
-        event.originalEvent.target.classList.remove('over');
+        //event.originalEvent.target.classList.remove('over');
         //console.log('dragleave', event);
     };
     $scope.drag = function(event) { 
@@ -321,11 +350,6 @@ function NotebookController($scope, $timeout, $window) {
         return false;
     };
 
-    $scope.newNoteId = function() {
-        // TODO: check for collisions and retry
-        var id = 'N' + Math.floor(Math.random()*1000000);
-        return id;
-    };
     $scope.nextX = 24;
     $scope.nextY = 24;
     $scope.nextIncrement = 24;
@@ -341,13 +365,20 @@ function NotebookController($scope, $timeout, $window) {
     // add note via command bar
     $scope.addNoteFromForm = function() {
         // called from commandBar form, so 'this' is $scope here
-        if (this.newNoteText[0] == '.') {
+        if (this.newNoteText[0] == '.') {           // command
             try {
                 eval('$scope.' + this.newNoteText.slice(1));
             } catch(e) {
                 console.log('Error:', e);
             }
             this.newNoteText = '';
+        }
+        else if (this.newNoteText[0] == '{') {     // json note
+            var newNote = JSON.parse(this.newNoteText);
+            newNote.i = $scope.newNoteId();
+            $scope.updateNote(newNote);
+            $scope.saveNote($scope.notes[newNote.i]);
+            this.newNoteText = '';            
         }
         else {
             if (this.newNoteText.length == 0) return;
@@ -406,6 +437,29 @@ function NotebookController($scope, $timeout, $window) {
         var lines = note.t.split('\n');
         return '<p>' + lines.join('</p>\n<p>') + '</p>';
     };
+
+    $scope.noteMenu = [
+        {t:'alert',             x:'alert("hello, world");hideMenu()'},
+        {t:'Edit Note Body',    x:'editText(selectedNote);hideMenu()'},
+        {t:'Edit Note Title',   x:'editTitle(selectedNote);hideMenu()'},
+        {t:'Delete Note',       x:'deleteNote(selectedNote);hideMenu()'},
+        {t:'Delete all notes',  x:'deleteAllNotes();hideMenu()'},
+    ];
+
+    $scope.showNoteMenu = function(note, event) {
+        $scope.selectedNote = note;
+        $scope.showingNoteMenu = true;
+        angular.element('.noteMenu').css({
+            left: event.clientX,
+            top: event.clientY
+        });
+    };
+    
+    $scope.hideMenu = function() {
+        delete $scope.showingNoteMenu;
+        delete $scope.selectedNote;
+    };
+
 };
 </script>
 
