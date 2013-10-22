@@ -10,16 +10,13 @@ BUGS
 - bug: stale target highlighting after dragdrop (disabled for now)
 - bug: when title wraps it looks ugly (make it a div?)
 - bug: disallow drag off left or top
+- bug: cursor pointer should be resize cursor during resize
+
 
 ========================================
 BASIC FEATURES
 
-- drag resize to set body width
-    - title width and body width coupled?
-
-- mouse pointer e-resize indicator in drag zone
 - gridded resize
-
 
 - Z-handling for new notes
     - bug: new notes show up under other ones

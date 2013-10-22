@@ -2,7 +2,7 @@
 <html>
 <!-- Copyright 2013 by Bill Roy.  Use under MIT License. -->
 <head>
-
+<title>note soup</title>
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'></script>
 <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
 <script src='http://code.angularjs.org/1.1.5/angular.min.js'></script>
@@ -151,6 +151,8 @@ p {
         <div class='titlebar'
             ng-right-click='showNoteMenu(note, $event)'
             ng-dblclick='editTitle(note)'
+            ng-mouseover='mouseover(note, $event)'
+            ng-mouseleave='mouseleave(note, $event)'
             ng-style='noteTitleStyle(note)'>
             <span style='cursor:pointer' ng-click='toggleText(note)'>
                 <span ng-hide='note.d'>&nbsp;&bull;</span>
@@ -179,6 +181,8 @@ p {
         </div>
         <div ng-show='note.d' class='notebody' 
             ng-right-click='showNoteMenu(note, $event)'
+            ng-mouseover='mouseover(note, $event)'
+            ng-mouseleave='mouseleave(note, $event)'
             ng-dblclick='editText(note)'>
             <div ng-show='note.d&&!note._editingText' ng-bind-html-unsafe='renderBody(note)'></div>
             <div ng-show='note.d&&note._editingText'>
@@ -279,7 +283,8 @@ function NotebookController($scope, $timeout, $window) {
             'border-color': note.c,
             left: note.x, 
             top: note.y, 
-            width: note.w
+            width: note.w,
+            cursor: note._resizable ? 'col-resize' : 'move'
         }
     };
 
@@ -362,6 +367,16 @@ function NotebookController($scope, $timeout, $window) {
         $scope.saveNote(note);
     };
 
+    // mouse pointer indication
+    $scope.mouseover = function(note, event) {
+        if ($scope.inResizeZone(note, event)) {
+            note._resizable = 1;
+        }
+        else delete note._resizable;
+    };
+    $scope.mouseleave = function(note, event) {
+        delete note._resizable;
+    };
 
     // drag and drop
     $scope.stopEvent = function(event) {
@@ -371,13 +386,10 @@ function NotebookController($scope, $timeout, $window) {
         }
     };
 
-    $scope.resizeMargin = 12;
+    $scope.resizeMargin = 36;
     $scope.inResizeZone = function(note, event) {
         var e = event.originalEvent;
         return (e.offsetX > (note.w - $scope.resizeMargin));
-    };
-    $scope.mousePointer = function(note, event) {
-        return {cursor:'move'};
     };
 
     $scope.drag = {};
@@ -405,7 +417,6 @@ function NotebookController($scope, $timeout, $window) {
             e.dataTransfer.setDragImage(angular.element('.dragImage')[0], 0, 0);
             $scope.drag.resize = true;
             $scope.drag.startingWidth = note.w;
-            console.log('resizestart', event);
         }
         else {
             $scope.drag.noteElement.style.opacity = 0.4;
