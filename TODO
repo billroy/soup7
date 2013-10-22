@@ -11,26 +11,13 @@ BUGS
 ========================================
 BASIC FEATURES
 
+- border of notes doesn't change to track note color
+    - ng-style
 - use $scope.eval in .commands
 - move contextmenu directive to separate file
-- set attribute color on svg icon
-
-- render note
-    - update styles
-
-- color picker
-    - isColorPickerUp()
-    - set watch on pickedColor, copy to target
-    - set watch on isColorPickerUp returns false,
-        - save the target
-        - remove both watches
-    - feature: cancel color picker change
-
-- note menu: 
-    - set note color
-    - set note background
-    - set default note color
-    - set workspace background
+- feature: cancel color picker change
+- bug: why doesn't setDebug(3 or 0) make the output appear/disappear?
+- feature: set default note color
 
 - storage overflow testing
     - test note generator

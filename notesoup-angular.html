@@ -18,7 +18,6 @@ body {
     background-color: black;
 }
 .notebook {
-    background-color: lightgray;
     width: 2048px;
     height:2048px;
 }
@@ -109,6 +108,7 @@ p {
 
 <div ng-controller='NotebookController' class='notebook'
     droppable='true'
+    ng-style='workspaceStyle()'
     ui-event='{
         dragstart:"dragstart($event)", 
         drag:"drag($event)",
@@ -129,9 +129,11 @@ p {
         </div>
     </div>
 
-    Notes: <div ng-repeat='note in notes'>{{note}}</div>
-    Color: {{pickedColor}}
-    Picker: {{picker}}
+    <div ng-show={{true||debug}}>
+        Notes: <div ng-repeat='note in notes'>{{note}}</div>
+        Color: {{pickedColor}}
+        Picker: {{picker}}
+    </div>
 
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
         ng-style='noteStyle(note)'
@@ -244,11 +246,24 @@ function NotebookController($scope, $timeout, $window) {
         {i:'n6', x:600, y:600, n:'sixth note', t:'text of sixth note', b:'magenta'}
     ];
 
+    $scope.debug = false;
+    $scope.setDebug = function(value) {
+        $scope.debug = value;
+    };
+
     $scope.appName = 'notesoup'
     $scope.path = 'inbox';
     $scope.notes = {};
-    $scope.defaultNote = {
-        w:150, b:'lightgreen', c:'black',
+
+    $scope.workspace = {
+        b:'lightgray',
+        defaultNote: {
+            w:150, b:'lightyellow', c:'black',
+        }
+    };
+    
+    $scope.workspaceStyle = function() {
+        return {background: $scope.workspace.b};
     };
 
     $scope.noteStyle = function(note) {
@@ -277,7 +292,7 @@ function NotebookController($scope, $timeout, $window) {
     $scope.updateNote = function(note) {
         if (!$scope.notes.hasOwnProperty(note.i)) {
             var newNote = {};
-            newNote.__proto__ = $scope.defaultNote;
+            newNote.__proto__ = $scope.workspace.defaultNote;
             $scope.notes[note.i] = newNote;
         }
         angular.extend($scope.notes[note.i], note);
@@ -400,12 +415,6 @@ function NotebookController($scope, $timeout, $window) {
             // TODO: handle page scroll offset
             $scope.notes[$scope.draggedNoteId].x = e.x - $scope.dragOffsetX + $window.pageXOffset;
             $scope.notes[$scope.draggedNoteId].y = e.y - $scope.dragOffsetY + $window.pageYOffset;
-
-            // TODO: why doesn't Angular move the element when the model updates?
-            angular.element($scope.draggedNoteElement).css({
-                left: $scope.notes[$scope.draggedNoteId].x,
-                top: $scope.notes[$scope.draggedNoteId].y
-            });
             $scope.saveNote($scope.notes[$scope.draggedNoteId]);
         }
         else {        
@@ -511,6 +520,17 @@ function NotebookController($scope, $timeout, $window) {
         $scope.saveNote(note);
     };
 
+    $scope.duplicateNote = function(note) {
+        var newNote = {};
+        angular.extend(newNote, note);
+        angular.extend(newNote, {
+            i: $scope.newNoteId(),
+            x: newNote.x + 24,
+            y: newNote.y + 24
+        });
+        $scope.updateNote(newNote);
+    };
+
     $scope.renderBody = function(note) {
         if (!note.t) return '';
         if (note.t[0] == '<') return note.t;    // html body
@@ -525,11 +545,12 @@ function NotebookController($scope, $timeout, $window) {
         {t:'Set Text Color',        x:'setNoteColor("c", selectedNote, $event);hideMenu()'},
         {t:'Set Background Color',  x:'setNoteColor("b", selectedNote, $event);hideMenu()'},
         {s:1},
+        {t:'Duplicate Note',        x:'duplicateNote(selectedNote);hideMenu()'},
+        {s:1},
         {t:'Delete Note',           x:'deleteNote(selectedNote);hideMenu()'},
         {t:'Delete All Notes',      x:'deleteAllNotes();hideMenu()'},
         {s:1},
-        {t:'Set Workspace Color',   x:'setWorkspaceColor("c", selectedNote, $event);hideMenu()'},
-        {t:'Set Workspace Background',  x:'setWorkspaceColor("b", selectedNote, $event);hideMenu()'}       
+        {t:'Set Workspace Background',  x:'setWorkspaceColor("b", workspace, $event);hideMenu()'}       
     ];
 
     $scope.showNoteMenu = function(note, event) {
@@ -543,7 +564,7 @@ function NotebookController($scope, $timeout, $window) {
 
     $scope.pickedColor = '';
 
-    $scope.showColorPicker = function(note, event) {
+    $scope.showColorPicker = function(event) {
         $scope.showingColorPicker = true;
         angular.element('.colorPickerPlaceholder').click();
         angular.element('.colorpicker').css({
@@ -557,20 +578,31 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.setNoteColor = function(attr, note, event) {
-        $scope.pickedColor = note[attr];
-        $scope.showColorPicker(note, event);
+        $scope.setObjectColor(attr, note, event, function(note) {
+            $scope.saveNote(note);
+        });
+    };
+
+    $scope.setWorkspaceColor = function(attr, obj, event) {
+        $scope.setObjectColor(attr, obj, event, function(background) {
+            //saveWorkspace();
+        });
+    };
+    
+    $scope.setObjectColor = function(attr, obj, event, callback) {
+        $scope.pickedColor = obj[attr];
+        $scope.showColorPicker(event);
 
         // watch pickedColor and update note[attr]
         var colorWatch = $scope.$watch('pickedColor', function(newValue, oldValue) {
             if (newValue === oldValue) return;
-            note[attr] = newValue;
-            //$scope.notes[note.i][attr] = newValue;
+            obj[attr] = newValue;
         });
 
         // watch isColorPickerVisible to become false and saveNote 
         var colorPickerWatch = $scope.$watch('isColorPickerVisible()', function(newValue, oldValue) {
             if (oldValue == true && newValue == false) {
-                $scope.saveNote(note);
+                if (callback) callback(obj);
                 colorWatch();       // stop watching: call the remove() function
                 colorPickerWatch();
             }
