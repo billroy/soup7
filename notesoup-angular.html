@@ -101,7 +101,6 @@ p {
 </head>
 <body ng-app='NoteSoup'>
 
-
 <div ng-controller='NotebookController' class='notebook'
     droppable='true'
     ui-event='{
@@ -124,7 +123,8 @@ p {
         </div>
     </div>
 
-Notes:..{{newNoteText}}.. {{notes}} ..
+    Notes: <div ng-repeat='note in notes'>{{note}}</div>
+
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
         ng-style='{color:"{{note.c}}", left:"{{note.x}}px", top:"{{note.y}}px", width:"{{note.w}}px"}'
         draggable='true'
@@ -468,6 +468,7 @@ function NotebookController($scope, $timeout, $window) {
     // edit text of note
     $scope.editText = function(note) {
         note._saved_text = note.t;
+        note.d = 1;
         note._editingText = 1;
     };
     $scope.cancelEditText = function(note) {

@@ -3,7 +3,7 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: stale target highlighting after dragdrop
+- bug: stale target highlighting after dragdrop (disabled for now)
 - bug: why doesn't angular update note position on model update?
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
@@ -12,6 +12,7 @@ BUGS
 BASIC FEATURES
 
 - Z-handling for new notes
+    - bug: new notes show up under other ones
 
 - note menu: 
     - set note color
@@ -52,14 +53,12 @@ BASIC FEATURES
 
 - save app globals
     - current workspace path
-    - issue: is it folder, workspace, or notebook?
 
 - rendering
     - issue: what goes in .t?
         - raw text?
         - html?
         - markdown?
-    - render note via function in the template: renderNote(note)
 
 - dragdrop
     - note toTop() on drag
