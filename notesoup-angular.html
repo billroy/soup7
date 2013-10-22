@@ -101,11 +101,7 @@ p {
 }
 .colorPickerContainer {
     position: absolute;
-    background: magenta;
-    color: white;
     z-index: 15000;
-    border: 5px solid green;
-    border-radius: 4px;
 }
 </style>
 </head>
@@ -135,9 +131,10 @@ p {
 
     Notes: <div ng-repeat='note in notes'>{{note}}</div>
     Color: {{pickedColor}}
+    Picker: {{picker}}
 
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
-        ng-style='{color:"{{note.c}}", left:"{{note.x}}px", top:"{{note.y}}px", width:"{{note.w}}px"}'
+        ng-style='noteStyle(note)'
         draggable='true'
         ui-event='{
             dragstart:"dragstart($event)", 
@@ -151,7 +148,7 @@ p {
         <div class='titlebar'
             ng-right-click='showNoteMenu(note, $event)'
             ng-dblclick='editTitle(note)'
-            ng-style='{background:"{{note.b}}", width:"{{note.w}}px"}'>
+            ng-style='noteTitleStyle(note)'>
             <span style='cursor:pointer' ng-click='toggleText(note)'>
                 <span ng-hide='note.d'>&nbsp;&bull;</span>
 <!--
@@ -162,7 +159,7 @@ p {
 -->
                 <svg ng-show='note.d' width='12' height='12'>
                     <path d='M3,5L6,9L9,5Z'
-                        style='fill:#000; stroke:#000;'/>
+                        style='fill:{{note.c}}; stroke:{{note.c}};'/>
                 </svg>
             </span>
             <span class='notetitle' 
@@ -206,7 +203,9 @@ p {
     </div>
 
     <div class='colorPickerContainer' ng-show='showingColorPicker'>
-        <span colorpicker='hex' class='colorPicker span2' ng-model='pickedColor'></span>
+        <span colorpicker='hex' 
+            colorpicker-position='right' 
+            class='colorPickerPlaceholder span2' ng-model='pickedColor'></span>
     </div>
 </div>
 
@@ -250,6 +249,21 @@ function NotebookController($scope, $timeout, $window) {
     $scope.notes = {};
     $scope.defaultNote = {
         w:150, b:'lightgreen', c:'black',
+    };
+
+    $scope.noteStyle = function(note) {
+        return {
+            color: note.c,
+            left: note.x, 
+            top: note.y, 
+            width: note.w
+        }
+    };
+
+    $scope.noteTitleStyle = function(note) {
+        return {
+            background: note.b
+        }
     };
 
     $scope.nextNoteId = 1;
@@ -512,7 +526,7 @@ function NotebookController($scope, $timeout, $window) {
         {t:'Set Background Color',  x:'setNoteColor("b", selectedNote, $event);hideMenu()'},
         {s:1},
         {t:'Delete Note',           x:'deleteNote(selectedNote);hideMenu()'},
-        {t:'Delete all notes',      x:'deleteAllNotes();hideMenu()'},
+        {t:'Delete All Notes',      x:'deleteAllNotes();hideMenu()'},
         {s:1},
         {t:'Set Workspace Color',   x:'setWorkspaceColor("c", selectedNote, $event);hideMenu()'},
         {t:'Set Workspace Background',  x:'setWorkspaceColor("b", selectedNote, $event);hideMenu()'}       
@@ -528,23 +542,39 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.pickedColor = '';
+
     $scope.showColorPicker = function(note, event) {
         $scope.showingColorPicker = true;
-        angular.element('.colorPicker')
-        .click();
-
-        // BUG: color picker comes up at top left of screen instead of at note.
-        angular.element('.colorPickerContainer')
-        .css({
+        angular.element('.colorPickerPlaceholder').click();
+        angular.element('.colorpicker').css({
             left: event.clientX,
             top: event.clientY
         });        
     };
 
+    $scope.isColorPickerVisible = function() {
+        return $('.colorpicker-visible').length > 0;
+    };
+
     $scope.setNoteColor = function(attr, note, event) {
-        $scope.selectedAttr = attr;
         $scope.pickedColor = note[attr];
         $scope.showColorPicker(note, event);
+
+        // watch pickedColor and update note[attr]
+        var colorWatch = $scope.$watch('pickedColor', function(newValue, oldValue) {
+            if (newValue === oldValue) return;
+            note[attr] = newValue;
+            //$scope.notes[note.i][attr] = newValue;
+        });
+
+        // watch isColorPickerVisible to become false and saveNote 
+        var colorPickerWatch = $scope.$watch('isColorPickerVisible()', function(newValue, oldValue) {
+            if (oldValue == true && newValue == false) {
+                $scope.saveNote(note);
+                colorWatch();       // stop watching: call the remove() function
+                colorPickerWatch();
+            }
+        });
     };
 
     $scope.hideMenu = function() {
@@ -553,6 +583,12 @@ function NotebookController($scope, $timeout, $window) {
         delete $scope.showingColorPicker;
         delete $scope.selectedAttr;
     };
+
+    $scope.showPicker = function() {
+        $scope.picker = $scope.isColorPickerVisible();
+        $timeout($scope.showPicker, 500);
+    };
+    $scope.showPicker();
 
 };
 </script>

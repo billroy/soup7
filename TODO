@@ -3,33 +3,51 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: stale target highlighting after dragdrop (disabled for now)
 - bug: why doesn't angular update note position on model update?
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
+- bug: stale target highlighting after dragdrop (disabled for now)
 
 ========================================
 BASIC FEATURES
 
-- Z-handling for new notes
-    - bug: new notes show up under other ones
+- use $scope.eval in .commands
+- move contextmenu directive to separate file
+- set attribute color on svg icon
+
+- render note
+    - update styles
+
+- color picker
+    - isColorPickerUp()
+    - set watch on pickedColor, copy to target
+    - set watch on isColorPickerUp returns false,
+        - save the target
+        - remove both watches
+    - feature: cancel color picker change
 
 - note menu: 
     - set note color
-    - set workspace color
+    - set note background
+    - set default note color
+    - set workspace background
+
+- storage overflow testing
+    - test note generator
+    - forceStorageOverflow
+
+- drag resize to set body width
+    - title width and body width coupled?
 
 - auto-adjust title width
     http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
     - on load
     - after editTitle
 
-- make title html-ok
+- Z-handling for new notes
+    - bug: new notes show up under other ones
 
-- set colors
-    - need color picker
-    - workspace background
-    - note default
-    - this note's background
+- make title html-ok
 
 - animations
     - note creation slide-in
@@ -43,6 +61,7 @@ BASIC FEATURES
 
 - workspace menu
     - workspace selector
+        - load all workspaces at startup [name, notes, ...]
     - set/save/restore workspace color
         - workspace attribute storage?
             /app/folder/.color
@@ -54,11 +73,14 @@ BASIC FEATURES
 - save app globals
     - current workspace path
 
-- rendering
-    - issue: what goes in .t?
-        - raw text?
-        - html?
-        - markdown?
+- render image-only bodies specially
+    - handle in addNote
+- render link-only bodies specially
+
+- issue: what goes in .t?
+    - raw text?
+    - html?
+    - markdown?
 
 - dragdrop
     - note toTop() on drag
