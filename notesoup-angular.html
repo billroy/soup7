@@ -6,7 +6,7 @@
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'></script>
 <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
 <script src='http://code.angularjs.org/1.1.5/angular.min.js'></script>
-<script src='js/angular-ui.js'></script>
+<script src='js/ui-utils/modules/event/event.js'></script>
 <script src='js/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js'></script>
 
 <link href='http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' 
@@ -227,7 +227,7 @@ e:error editing editable
 o:opacity
 */
 
-window.app = angular.module('NoteSoup', ['ui', 'colorpicker.module']);
+window.app = angular.module('NoteSoup', ['ui.event', 'colorpicker.module']);
 
 // from http://jsfiddle.net/bcaudan/vTZZ5/
 app.directive('ngRightClick', function($parse) {
