@@ -12,9 +12,11 @@ BUGS
 - bug: disallow drag off left or top
 - bug: cursor pointer should be resize cursor during resize
 
-
 ========================================
 BASIC FEATURES
+
+- move debug, path, app to workspace
+- save/load workspace
 
 - gridded resize
 
@@ -22,7 +24,6 @@ BASIC FEATURES
     - bug: new notes show up under other ones
 
 - use $scope.eval in .commands
-- move contextmenu directive to separate file
 - feature: cancel color picker change
 - feature: set default note color and background, per workspace
 
@@ -55,21 +56,14 @@ BASIC FEATURES
 - save app globals
     - current workspace path
 
-- render image-only bodies specially
-    - handle in addNote
 - render link-only bodies specially
-
-- issue: what goes in .t?
-    - raw text?
-    - html?
-    - markdown?
 
 - dragdrop
     - note toTop() on drag
         - default note z
         - reZ on load?
+    - drag the real note; suppress the ghost?
     - drop note on note
-    - resize width
     - gridded drag/resize
 
 - note widget
