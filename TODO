@@ -5,20 +5,14 @@ BUGS
 
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
-- bug: stale target highlighting after dragdrop (disabled for now)
 - bug: shows green + icon while dragging
+- bug: click to drag on image-note's image -> alert "bogus note id"
+- bug: Enter should end title edit
+- bug: stale target highlighting after dragdrop (disabled for now)
+- bug: when title wraps it looks ugly (make it a div?)
 
 ========================================
 BASIC FEATURES
-
-- use $scope.eval in .commands
-- move contextmenu directive to separate file
-- feature: cancel color picker change
-- feature: set default note color and background, per workspace
-
-- storage overflow testing
-    - test note generator
-    - forceStorageOverflow
 
 - drag resize to set body width
     - title width and body width coupled?
@@ -30,6 +24,15 @@ BASIC FEATURES
 
 - Z-handling for new notes
     - bug: new notes show up under other ones
+
+- use $scope.eval in .commands
+- move contextmenu directive to separate file
+- feature: cancel color picker change
+- feature: set default note color and background, per workspace
+
+- storage overflow testing
+    - test note generator
+    - forceStorageOverflow
 
 - make title html-ok
 
@@ -90,9 +93,3 @@ BASIC FEATURES
     - add workspace command
     - set up inbox and trash by default
     - deleteNote -> moveToTrash    
-
-- set opacity
-- integrate with bootstrap?
-- peerJS app
-
-========================================

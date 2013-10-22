@@ -5,7 +5,7 @@
 
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'></script>
 <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
-<script src='http://code.angularjs.org/1.1.5/angular.js'></script>
+<script src='http://code.angularjs.org/1.1.5/angular.min.js'></script>
 <script src='js/angular-ui.js'></script>
 <script src='js/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js'></script>
 
@@ -111,7 +111,7 @@ p {
     ng-style='workspaceStyle()'
     ui-event='{
         dragstart:"dragstart($event)", 
-        drag:"drag($event)",
+        drag:"dragging($event)",
         dragover:"dragover($event)",
         dragenter:"dragenter($event)",
         dragleave:"dragleave($event)",
@@ -133,6 +133,7 @@ p {
         Notes: <div ng-repeat='note in notes'>{{note}}</div>
         Color: {{pickedColor}}
         Picker: {{picker}}
+        Resize: {{resize}}
     </div>
 
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
@@ -140,7 +141,7 @@ p {
         draggable='true'
         ui-event='{
             dragstart:"dragstart($event)", 
-            drag:"drag($event)",
+            drag:"dragging($event)",
             dragover:"dragover($event)",
             dragenter:"dragenter($event)",
             dragleave:"dragleave($event)",
@@ -188,6 +189,12 @@ p {
                     <span class='button' ng-click='saveText(note)'>&nbsp;Save&nbsp;</span>
                 </span>
             </div>
+<!--
+            <svg ng-show='1' width='12' height='12'>
+                <path d='M9,3L9,9 M3,6L9,6 M5,3L9,6 M5,9L9,6'
+                    style='float:right; stroke:#000;'/>
+            </svg>
+-->
         </div>
     </div>
 
@@ -246,7 +253,7 @@ function NotebookController($scope, $timeout, $window) {
         {i:'n6', x:600, y:600, n:'sixth note', t:'text of sixth note', b:'magenta'}
     ];
 
-    $scope.debug = false;
+    $scope.debug = true;
     $scope.setDebug = function(value) {
         $scope.debug = value;
     };
@@ -355,17 +362,6 @@ function NotebookController($scope, $timeout, $window) {
         $scope.saveNote(note);
     };
 
-    //$scope.getNote = function(id, callback) {
-    //   if ($scope.notes.hasOwnProperty(id)) 
-    //        callback($scope.notes[id]);
-    //};
-
-    $scope.runClock = function() {
-        $scope.notes['n3'].n = new Date();
-        $scope.notes['n2'].x = $scope.notes['n2'].x + Math.floor((Math.random()*20)-10); 
-        $timeout($scope.runClock, 1000);
-    }
-    //$scope.runClock();
 
     // drag and drop
     $scope.stopEvent = function(event) {
@@ -374,18 +370,33 @@ function NotebookController($scope, $timeout, $window) {
             e.preventDefault();     // Necessary. Allows us to drop.
         }
     };
-    $scope.draggedNoteElement = null;
-    $scope.draggedNoteId = null;
+    $scope.resizeMargin = 12;
+    $scope.drag = {};
+
     $scope.dragstart = function(event) {
+        if ($scope.drag.active) return;
         var e = event.originalEvent;
-        $scope.dragOffsetX = e.offsetX;
-        $scope.dragOffsetY = e.offsetY;
-        $scope.draggedNoteElement = e.target;
-        var id = $scope.draggedNoteElement.id;
+        angular.extend($scope.drag, {
+            offsetX: e.offsetX,
+            offsetY: e.offsetY,
+            noteElement: e.target,
+            active: true,
+        });
+
+        var id = $scope.drag.noteElement.id;
         if (!id.match(/^note_/)) alert('Bogus note id');
-        $scope.draggedNoteId = id.slice(5);
-        $scope.draggedNoteElement.style.opacity = 0.4;
-        //console.log('dragstart', event);
+        $scope.drag.noteId = id.slice(5);
+
+        var note = $scope.notes[$scope.drag.noteId];
+        if ($scope.drag.offsetX > (note.w - $scope.resizeMargin)) {
+            $scope.drag.resize = true;
+            console.log('resizestart', event);
+        }
+        else {
+            $scope.drag.noteElement.style.opacity = 0.4;
+            $scope.drag.resize = false;
+            //console.log('dragstart', event);
+        }
     };
     $scope.dragover = function(event) {
         $scope.stopEvent(event);
@@ -400,27 +411,33 @@ function NotebookController($scope, $timeout, $window) {
         //event.originalEvent.target.classList.remove('over');
         //console.log('dragleave', event);
     };
-    $scope.drag = function(event) { 
+    $scope.dragging = function(event) {
+        if ($scope.drag.resize) {
+            var e = event.originalEvent;
+            // have e.x, $scope.dragOffsetX
+            //$scope.notes[$scope.drag.noteId].w = 
+            console.log('resize', event);
+        }
         //console.log('drag', event); 
     };
     $scope.drop = function(event) {
         $scope.stopEvent(event);
-        $scope.draggedNoteElement.style.opacity = 1.0;
+        if (!$scope.drag.active) return;
+        // cannot read style of undefined
+        $scope.drag.noteElement.style.opacity = 1.0;
         var e = event.originalEvent;
         var target = e.target;
         var id = target.id;
         if (!id.match(/^note_/)) {  // drop on workspace
-            //console.log('drop on workspace');
-            // update note position
-            // BUG: this updates the scope, but not the location of the notes
-            // TODO: handle page scroll offset
-            $scope.notes[$scope.draggedNoteId].x = e.x - $scope.dragOffsetX + $window.pageXOffset;
-            $scope.notes[$scope.draggedNoteId].y = e.y - $scope.dragOffsetY + $window.pageYOffset;
-            $scope.saveNote($scope.notes[$scope.draggedNoteId]);
+            $scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.offsetX + $window.pageXOffset;
+            $scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.offsetY + $window.pageYOffset;
+            $scope.saveNote($scope.notes[$scope.drag.noteId]);
+            $scope.drag = {};
         }
         else {        
             // TODO: drop on note
-            return;
+            $scope.drag = {};
+            return false;
             var droppedNoteId = id.slice(5);
             console.log('dropped on note', droppedNoteId);
             $scope.notes[droppedNoteId].t += [
@@ -467,7 +484,7 @@ function NotebookController($scope, $timeout, $window) {
             $scope.saveNote($scope.notes[newNote.i]);
             this.newNoteText = '';            
         }
-        else if (this.isUrl.test(this.newNoteText)) {
+        else if (this.isUrl.test(this.newNoteText)) {   // image note
             var newNote = {};
             angular.extend(newNote, {
                 i: this.newNoteId(),
@@ -637,12 +654,6 @@ function NotebookController($scope, $timeout, $window) {
         delete $scope.showingColorPicker;
         delete $scope.selectedAttr;
     };
-
-    $scope.showPicker = function() {
-        $scope.picker = $scope.isColorPickerVisible();
-        $timeout($scope.showPicker, 500);
-    };
-    $scope.showPicker();
 
 };
 </script>
