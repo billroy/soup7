@@ -58,7 +58,8 @@ textarea {
     color: white !important;
     background: black;
     font-size: 0.8em;
-    border-radius: 3px;    
+    border-radius: 3px;
+    cursor:pointer;
 }
 .buttons {
     margin: 0 2em 0 2em;
@@ -73,6 +74,7 @@ textarea {
 }
 .noteMenu div {
     padding: 0 .25em 0 .25em;
+    cursor:default;
 }
 .noteMenu div.highlight {
     background: blue;
@@ -91,6 +93,9 @@ div.commandbar {
 }
 div.commandbar>input {
     width: 512px;
+}
+p {
+    margin-bottom: 0em;
 }
 </style>
 </head>
@@ -134,22 +139,23 @@ Notes:..{{newNoteText}}.. {{notes}} ..
         }'>
         <div class='titlebar'
             ng-right-click='showNoteMenu(note, $event)'
+            ng-dblclick='editTitle(note)'
             ng-style='{background:"{{note.b}}", width:"{{note.w}}px"}'>
-            <span ng-click='toggleText(note)'>&nbsp;&bull;
+            <span style='cursor:pointer' ng-click='toggleText(note)'>
+                <span ng-hide='note.d'>&nbsp;&bull;</span>
 <!--
                 <svg ng-hide='note.d' width='12' height='12'>
                     <path d='M3,3L7,6L3,9Z'
                         style='fill:#000; stroke:#000;'/>
                 </svg>
+-->
                 <svg ng-show='note.d' width='12' height='12'>
                     <path d='M3,5L6,9L9,5Z'
                         style='fill:#000; stroke:#000;'/>
                 </svg>
--->
             </span>
             <span class='notetitle' 
-                ng-hide='note._editingTitle' 
-                ng-dblclick='editTitle(note)'>{{note.n}}
+                ng-hide='note._editingTitle'>{{note.n}}
             </span>
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
@@ -432,6 +438,7 @@ function NotebookController($scope, $timeout, $window) {
                 y: $scope.nextYPos()
             };
             if (lines.length > 1) {
+                // html in the body: replace the slashes
                 if (lines[1][0] == '<') newNote.t = lines.slice(1).join('/');
                 else newNote.t = lines.slice(1).join('\n');
                 newNote.d = 1;
@@ -476,9 +483,9 @@ function NotebookController($scope, $timeout, $window) {
 
     $scope.renderBody = function(note) {
         if (!note.t) return '';
-        if (note.t[0] == '<') return note.t;
+        if (note.t[0] == '<') return note.t;    // html body
         var lines = note.t.split('\n');
-        return '<p>' + lines.join('</p>\n<p>') + '</p>';
+        return '<p>' + lines.join('</p>\n<p>') + '</p>';    // else htmlify body
     };
 
     $scope.noteMenu = [
