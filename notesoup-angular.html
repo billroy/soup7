@@ -129,7 +129,7 @@ p {
         </div>
     </div>
 
-    <div ng-show={{true||debug}}>
+    <div ng-show='debug'>
         Notes: <div ng-repeat='note in notes'>{{note}}</div>
         Color: {{pickedColor}}
         Picker: {{picker}}
@@ -269,6 +269,7 @@ function NotebookController($scope, $timeout, $window) {
     $scope.noteStyle = function(note) {
         return {
             color: note.c,
+            'border-color': note.c,
             left: note.x, 
             top: note.y, 
             width: note.w

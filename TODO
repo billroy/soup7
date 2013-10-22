@@ -3,7 +3,6 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: why doesn't angular update note position on model update?
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
 - bug: stale target highlighting after dragdrop (disabled for now)
@@ -11,13 +10,10 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- border of notes doesn't change to track note color
-    - ng-style
 - use $scope.eval in .commands
 - move contextmenu directive to separate file
 - feature: cancel color picker change
-- bug: why doesn't setDebug(3 or 0) make the output appear/disappear?
-- feature: set default note color
+- feature: set default note color and background, per workspace
 
 - storage overflow testing
     - test note generator
@@ -42,7 +38,6 @@ BASIC FEATURES
 
 - defaults
     - edit baseNote to set workspace wide note default attributes
-    - make baseNote a workspace attribute and save somehow
 
 - note attribute editor
 
