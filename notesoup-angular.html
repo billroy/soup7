@@ -3,13 +3,15 @@
 <!-- Copyright 2013 by Bill Roy.  Use under MIT License. -->
 <head>
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
-<script src="http://code.angularjs.org/1.1.5/angular.js"></script>
-<script src="angular-ui.js"></script>
+<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'></script>
+<script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
+<script src='http://code.angularjs.org/1.1.5/angular.js'></script>
+<script src='js/angular-ui.js'></script>
+<script src='js/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js'></script>
 
-<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap.min.css" rel="stylesheet"/>
-
+<link href='http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' 
+    rel='stylesheet'/>
+<link href='js/angular-bootstrap-colorpicker/css/colorpicker.css' rel='stylesheet'/>
 
 <style type='text/css'>
 body {
@@ -97,6 +99,14 @@ div.commandbar>input {
 p {
     margin-bottom: 0em;
 }
+.colorPickerContainer {
+    position: absolute;
+    background: magenta;
+    color: white;
+    z-index: 15000;
+    border: 5px solid green;
+    border-radius: 4px;
+}
 </style>
 </head>
 <body ng-app='NoteSoup'>
@@ -124,6 +134,7 @@ p {
     </div>
 
     Notes: <div ng-repeat='note in notes'>{{note}}</div>
+    Color: {{pickedColor}}
 
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
         ng-style='{color:"{{note.c}}", left:"{{note.x}}px", top:"{{note.y}}px", width:"{{note.w}}px"}'
@@ -191,8 +202,12 @@ p {
                 ng-mouseleave='overclass=""'>{{item.t}}
             </div>
             <div ng-show='item.s' class='rule'></div>
+        </div>
     </div>
 
+    <div class='colorPickerContainer' ng-show='showingColorPicker'>
+        <span colorpicker='hex' class='colorPicker span2' ng-model='pickedColor'></span>
+    </div>
 </div>
 
 <script type='text/javascript'>
@@ -204,7 +219,7 @@ e:error editing editable
 o:opacity
 */
 
-window.app = angular.module('NoteSoup', ['ui']);
+window.app = angular.module('NoteSoup', ['ui', 'colorpicker.module']);
 
 // from http://jsfiddle.net/bcaudan/vTZZ5/
 app.directive('ngRightClick', function($parse) {
@@ -490,11 +505,17 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.noteMenu = [
-        {t:'Edit Note Body',    x:'editText(selectedNote);hideMenu()'},
-        {t:'Edit Note Title',   x:'editTitle(selectedNote);hideMenu()'},
+        {t:'Edit Note Body',        x:'editText(selectedNote);hideMenu()'},
+        {t:'Edit Note Title',       x:'editTitle(selectedNote);hideMenu()'},
         {s:1},
-        {t:'Delete Note',       x:'deleteNote(selectedNote);hideMenu()'},
-        {t:'Delete all notes',  x:'deleteAllNotes();hideMenu()'},
+        {t:'Set Text Color',        x:'setNoteColor("c", selectedNote, $event);hideMenu()'},
+        {t:'Set Background Color',  x:'setNoteColor("b", selectedNote, $event);hideMenu()'},
+        {s:1},
+        {t:'Delete Note',           x:'deleteNote(selectedNote);hideMenu()'},
+        {t:'Delete all notes',      x:'deleteAllNotes();hideMenu()'},
+        {s:1},
+        {t:'Set Workspace Color',   x:'setWorkspaceColor("c", selectedNote, $event);hideMenu()'},
+        {t:'Set Workspace Background',  x:'setWorkspaceColor("b", selectedNote, $event);hideMenu()'}       
     ];
 
     $scope.showNoteMenu = function(note, event) {
@@ -505,10 +526,32 @@ function NotebookController($scope, $timeout, $window) {
             top: event.clientY
         });
     };
-    
+
+    $scope.pickedColor = '';
+    $scope.showColorPicker = function(note, event) {
+        $scope.showingColorPicker = true;
+        angular.element('.colorPicker')
+        .click();
+
+        // BUG: color picker comes up at top left of screen instead of at note.
+        angular.element('.colorPickerContainer')
+        .css({
+            left: event.clientX,
+            top: event.clientY
+        });        
+    };
+
+    $scope.setNoteColor = function(attr, note, event) {
+        $scope.selectedAttr = attr;
+        $scope.pickedColor = note[attr];
+        $scope.showColorPicker(note, event);
+    };
+
     $scope.hideMenu = function() {
         delete $scope.showingNoteMenu;
         delete $scope.selectedNote;
+        delete $scope.showingColorPicker;
+        delete $scope.selectedAttr;
     };
 
 };
