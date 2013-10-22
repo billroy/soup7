@@ -6,6 +6,7 @@ BUGS
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
 - bug: stale target highlighting after dragdrop (disabled for now)
+- bug: shows green + icon while dragging
 
 ========================================
 BASIC FEATURES

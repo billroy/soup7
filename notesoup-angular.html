@@ -467,6 +467,19 @@ function NotebookController($scope, $timeout, $window) {
             $scope.saveNote($scope.notes[newNote.i]);
             this.newNoteText = '';            
         }
+        else if (this.isUrl.test(this.newNoteText)) {
+            var newNote = {};
+            angular.extend(newNote, {
+                i: this.newNoteId(),
+                d: 1,
+                t: this.newNoteText,
+                x: this.nextXPos(),
+                y: this.nextYPos()
+            });
+            this.updateNote(newNote);
+            this.saveNote(this.notes[newNote.i]);
+            this.newNoteText = '';            
+        }
         else {
             if (this.newNoteText.length == 0) return;
             var lines = this.newNoteText.split('/');
@@ -532,8 +545,16 @@ function NotebookController($scope, $timeout, $window) {
         $scope.updateNote(newNote);
     };
 
+    $scope.isUrl = /^(http:|https:)/;
+    $scope.isImg = /(.jpg|.jpeg|.png|.gif|.tiff)$/;
+
     $scope.renderBody = function(note) {
         if (!note.t) return '';
+        if ($scope.isUrl.test(note.t)) {    // image url
+            if ($scope.isImg.test(note.t)) {
+                return '<img src="' + note.t + '" width="' + note.w + '"/>';
+            }
+        }
         if (note.t[0] == '<') return note.t;    // html body
         var lines = note.t.split('\n');
         return '<p>' + lines.join('</p>\n<p>') + '</p>';    // else htmlify body
