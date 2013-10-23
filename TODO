@@ -3,6 +3,9 @@ angular-notesoup todo
 ========================================
 BUGS
 
+- bug: color menus should pop at original menu xy
+- bug: color picker still appears up until cursor mouseover another element
+
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
 - bug: click to drag on image-note's image -> alert "bogus note id"
@@ -19,6 +22,8 @@ BASIC FEATURES
 - save/load workspace
 
 - gridded resize
+- gridded drag
+    - remove drag image and move the note itself
 
 - Z-handling for new notes
     - bug: new notes show up under other ones

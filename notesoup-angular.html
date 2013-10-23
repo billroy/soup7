@@ -32,7 +32,7 @@ body {
     border-radius: 12px;
 }
 .notetitle {
-	font: bold .8em;
+	font-size: .8em;
     font-weight: bold;
 	text-align: left;
 }
@@ -68,7 +68,7 @@ textarea {
 .noteMenu {
     position: absolute;
     background: white;
-    color: black
+    color: black;
     z-index: 10000;
     border: 1px solid black;
     border-radius: 4px;
@@ -129,11 +129,12 @@ p {
         </div>
     </div>
 
-    <div ng-show='debug'>
+    <div ng-show='workspace.debug'>
         Workspace: {{workspace}}
         Notes: <div ng-repeat='note in notes'>{{note}}</div>
         Color: {{pickedColor}}
         Resize: {{drag.resize}}
+        Picker: {{isColorPickerVisible()}}
     </div>
 
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
@@ -155,16 +156,19 @@ p {
             ng-mouseleave='mouseleave(note, $event)'
             ng-style='noteTitleStyle(note)'>
             <span style='cursor:pointer' ng-click='toggleText(note)'>
-                <span ng-hide='note.d'>&nbsp;&bull;</span>
+                <svg ng-hide='note.d' width='12' height='12'>
+                    <circle cx='8' cy='7' r='2' 
+                        ng-style='{fill:note.c, stroke:note.c}'/>
+                </svg>
 <!--
                 <svg ng-hide='note.d' width='12' height='12'>
-                    <path d='M3,3L7,6L3,9Z'
+                    <path d='M4,3L8,6L4,9Z'
                         style='fill:#000; stroke:#000;'/>
                 </svg>
 -->
                 <svg ng-show='note.d' width='12' height='12'>
-                    <path d='M3,5L6,9L9,5Z'
-                        style='fill:{{note.c}}; stroke:{{note.c}};'/>
+                    <path d='M4,5L7,9L10,5Z'
+                        ng-style='{fill:note.c, stroke:note.c}'/>
                 </svg>
             </span>
             <span class='notetitle' 
@@ -257,16 +261,19 @@ function NotebookController($scope, $timeout, $window) {
         {i:'n6', x:600, y:600, n:'sixth note', t:'text of sixth note', b:'magenta'}
     ];
 
-    $scope.debug = true;
     $scope.setDebug = function(value) {
-        $scope.debug = value;
+        $scope.workspace.debug = value;
+        $scope.saveWorkspace();
     };
 
     $scope.appName = 'notesoup'
     $scope.path = 'inbox';
     $scope.notes = {};
+    $scope.workspaceId = 'Workspace';
 
     $scope.workspace = {
+        i: $scope.workspaceId,
+        debug: false,
         b:'lightgray',
         defaultNote: {
             w:150, b:'lightyellow', c:'black',
@@ -320,9 +327,9 @@ function NotebookController($scope, $timeout, $window) {
         });
     };
 
-    // localStorage key for a note
-    $scope.getKey = function(note) {
-        return [$scope.appName, $scope.path, note.i].join('/');
+    // localStorage key for any object with a .i field
+    $scope.getKey = function(obj) {
+        return [$scope.appName, $scope.path, obj.i].join('/');
     };
     
     // load notes from localStorage
@@ -332,8 +339,17 @@ function NotebookController($scope, $timeout, $window) {
             var keyParts = key.split('/');
             if (keyParts[0] != $scope.appName) return;
             if (keyParts[1] != $scope.path) return;
-            var note = JSON.parse(localStorage[key]);
-            $scope.updateNote(note);
+            if (keyParts[2][0] == 'N') {
+                var note = JSON.parse(localStorage[key]);
+                $scope.updateNote(note);
+            }
+            else if (keyParts[2] == $scope.workspaceId) {
+                $scope.workspace = JSON.parse(localStorage[key]);
+            }
+            else { 
+                alert('Deleting unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
+                localStorage.removeItem(key);
+            }
         });
     };
     //$scope.loadSampleNotes();
@@ -344,7 +360,7 @@ function NotebookController($scope, $timeout, $window) {
         try {
             localStorage.setItem(key, JSON.stringify(note));
         } catch(e) {
-            alert('ERROR: Could not save note!  Increase LocalStorage!');
+            alert('ERROR: Could not save object!  Increase LocalStorage!');
         }
     };
 
@@ -359,6 +375,10 @@ function NotebookController($scope, $timeout, $window) {
             $scope.deleteNote(note);
         });
         $scope.nextNoteId = 1;
+    };
+    
+    $scope.saveWorkspace = function() {
+        $scope.saveNote($scope.workspace);        
     };
 
     $scope.toggleText = function(note) {
@@ -592,6 +612,7 @@ function NotebookController($scope, $timeout, $window) {
             y: newNote.y + 24
         });
         $scope.updateNote(newNote);
+        $scope.saveNote(newNote);
     };
 
     $scope.isUrl = /^(http:|https:)/;
@@ -655,8 +676,8 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.setWorkspaceColor = function(attr, obj, event) {
-        $scope.setObjectColor(attr, obj, event, function(background) {
-            //saveWorkspace();
+        $scope.setObjectColor(attr, obj, event, function(workspace) {
+            $scope.saveWorkspace();
         });
     };
     
