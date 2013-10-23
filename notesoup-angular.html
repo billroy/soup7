@@ -32,11 +32,12 @@ body {
     border-radius: 12px;
 }
 .notetitle {
-	font-size: .8em;
+	font-size: 100%;
     font-weight: bold;
 	text-align: left;
 }
 .notebody {
+    font-size: 80%;
     margin: -0.1em 0.5em 0 0.5em;
     padding: 0.5em 1em 1em 1em;
     background: white;
@@ -648,9 +649,11 @@ function NotebookController($scope, $timeout, $window) {
     $scope.showNoteMenu = function(note, event) {
         $scope.selectedNote = note;
         $scope.showingNoteMenu = true;
+        $scope.menuX = event.clientX;
+        $scope.menuY = event.clientY;
         angular.element('.noteMenu').css({
-            left: event.clientX,
-            top: event.clientY
+            left: $scope.menuX,
+            top: $scope.menuY
         });
     };
 
@@ -660,8 +663,8 @@ function NotebookController($scope, $timeout, $window) {
         $scope.showingColorPicker = true;
         angular.element('.colorPickerPlaceholder').click();
         angular.element('.colorpicker').css({
-            left: event.clientX,
-            top: event.clientY
+            left: $scope.menuX,
+            top: $scope.menuY
         });        
     };
 

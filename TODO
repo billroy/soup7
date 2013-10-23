@@ -3,29 +3,32 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: color menus should pop at original menu xy
 - bug: color picker still appears up until cursor mouseover another element
 
+- bug: when title wraps it looks ugly (make it a div?)
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
 - bug: click to drag on image-note's image -> alert "bogus note id"
 - bug: Enter should end title edit
 - bug: stale target highlighting after dragdrop (disabled for now)
-- bug: when title wraps it looks ugly (make it a div?)
 - bug: disallow drag off left or top
 - bug: cursor pointer should be resize cursor during resize
 
 ========================================
 BASIC FEATURES
 
-- move debug, path, app to workspace
-- save/load workspace
+- dragdrop
+    - gridded resize
+    - gridded drag
+        - remove drag image and move the note itself
+    - note toTop() on drag
+        - default note z
+        - reZ on load?
+    - drag the real note; suppress the ghost?
+    - drop note on note
+    - gridded drag/resize
 
-- gridded resize
-- gridded drag
-    - remove drag image and move the note itself
-
-- Z-handling for new notes
+- Z-handling for new notes, dragged notes
     - bug: new notes show up under other ones
 
 - use $scope.eval in .commands
@@ -42,34 +45,17 @@ BASIC FEATURES
     - note creation slide-in
     - note deletion fade-out
 
-- defaults
-    - edit baseNote to set workspace wide note default attributes
-
 - note attribute editor
 
 - workspace menu
     - workspace selector
         - load all workspaces at startup [name, notes, ...]
-    - set/save/restore workspace color
-        - workspace attribute storage?
-            /app/folder/.color
-
-- save workspace attributes
-    - baseNote
-    - workspace color
 
 - save app globals
-    - current workspace path
+    - current workspace path (could get from url)
 
 - render link-only bodies specially
 
-- dragdrop
-    - note toTop() on drag
-        - default note z
-        - reZ on load?
-    - drag the real note; suppress the ghost?
-    - drop note on note
-    - gridded drag/resize
 
 - note widget
     - double click dropdown button 
