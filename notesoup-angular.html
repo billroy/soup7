@@ -491,14 +491,13 @@ function NotebookController($scope, $timeout, $window) {
         $scope.drag.noteId = id.slice(5);
 
         var note = $scope.notes[$scope.drag.noteId];
+        e.dataTransfer.setDragImage(angular.element('.dragImage')[0], 0, 0);
         if ($scope.inResizeZone(note, event)) {
-            e.dataTransfer.setDragImage(angular.element('.dragImage')[0], 0, 0);
             $scope.drag.resizing = true;
             $scope.drag.startingWidth = note.w;
         }
         else {
-            $scope.drag.noteElement.style.opacity = 0.4;
-            $scope.drag.resizing = false;
+            $scope.drag.noteElement.style.opacity = 0.6;
         }
     };
     $scope.dragover = function(event) {
@@ -518,12 +517,16 @@ function NotebookController($scope, $timeout, $window) {
         //console.log('dragleave', event);
     };
     $scope.dragging = function(event) {
+        var e = event.originalEvent;
         if ($scope.drag.resizing) {
-            var e = event.originalEvent;
             var delta = e.offsetX - $scope.drag.offsetX;
             var newWidth = $scope.drag.startingWidth + delta;
             if (newWidth < 48) newWidth = 48;
             $scope.notes[$scope.drag.noteId].w = newWidth;
+        }
+        else {
+            $scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.offsetX + $window.pageXOffset;
+            $scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.offsetY + $window.pageYOffset;
         }
         //console.log('drag', event); 
     };
@@ -727,6 +730,8 @@ function NotebookController($scope, $timeout, $window) {
     $scope.menu = {};
 
     $scope.showNoteMenu = function(note, event) {
+        event.preventDefault();
+        event.stopPropagation();
         angular.extend($scope.menu, {
             selectedNote: note,
             showingNoteMenu: true,

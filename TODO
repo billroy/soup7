@@ -16,15 +16,8 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- command bar
-    - make command bar sticky to top of screen
-        - position absolute
-        - watch scroll
-    - make command bar full width of screen
-        watch screen width
-    - make note background container auto size?
-
-- make the placeholder text in the input go away after a note is created
+- BUG: note menu comes up under workspace menu
+    - can't get to notemenu
 
 - Z-handling for new notes, dragged notes
     - bug: new notes show up under other ones
@@ -43,10 +36,8 @@ BASIC FEATURES
 - feature: cancel color picker change
 
 - workspace menu
-    - right click on note container
-    - move setworkspacecolor here
-    - feature: set default note color and background, per workspace
-    - setdebug
+    - test: feature: set default note color and background, per workspace
+    - test: setdebug
 
 - storage overflow testing
     - test note generator
