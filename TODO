@@ -26,10 +26,6 @@ BASIC FEATURES
 
 - use $scope.eval in .commands
 
-- workspace menu
-    - test: feature: set default note color and background, per workspace
-        - bug: after refresh, notes look different
-
 - workspace selector
     - app-wide id uniqueness
         - put nextid in a app{}

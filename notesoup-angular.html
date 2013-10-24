@@ -159,7 +159,7 @@ p {
     </div>
 
     <div ng-show='workspace.debug'>
-        <p></p>
+        <div>Debug info:</div>
         <div>Workspace: {{workspace}}</div>
         <div>Notes: <div ng-repeat='note in notes'>{{note}}</div></div>
         <div>Color: {{pickedColor}}</div>
@@ -378,6 +378,14 @@ function NotebookController($scope, $timeout, $window) {
         if (id > $scope.nextNoteId) $scope.nextNoteId = id + 1;
     };
 
+    // during load, some notes become attached to the old (default) workspace object
+    // re-attach all the prototypes here so chaining works for attribute inheritance
+    $scope.setNotePrototypes = function() {
+        angular.forEach($scope.notes, function(note, index) {
+            note.__proto__ = $scope.workspace.defaultNote;
+        });
+    };
+
     // localStorage key for any object with a .i field
     // path is optional; defaults to app.path
     $scope.getKey = function(obj, path) {
@@ -404,6 +412,7 @@ function NotebookController($scope, $timeout, $window) {
                 if ($scope.workspace.debug = 666) localStorage.removeItem(key);
             }
         });
+        $scope.setNotePrototypes();
     };
     $scope.loadNotes();
 
