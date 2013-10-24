@@ -3,10 +3,6 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: resize doesn't work on safari
-
-- bug: color picker still appears up until cursor mouseover another element
-
 - bug: when title wraps it looks ugly (make it a div?)
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
@@ -27,19 +23,21 @@ BASIC FEATURES
     watch screen width
 - make note background container auto size?
 
+- move menu state to menu{}
+- move picker state to picker{}
+
+- Z-handling for new notes, dragged notes
+    - bug: new notes show up under other ones
+
 - dragdrop
+    - remove drag image and move the note itself
     - gridded resize
     - gridded drag
-        - remove drag image and move the note itself
     - note toTop() on drag
         - default note z
         - reZ on load?
     - drag the real note; suppress the ghost?
     - drop note on note
-    - gridded drag/resize
-
-- Z-handling for new notes, dragged notes
-    - bug: new notes show up under other ones
 
 - use $scope.eval in .commands
 - feature: cancel color picker change
@@ -51,10 +49,6 @@ BASIC FEATURES
 
 - make title html-ok
 
-- animations
-    - note creation slide-in
-    - note deletion fade-out
-
 - note attribute editor
 
 - workspace menu
@@ -64,6 +58,10 @@ BASIC FEATURES
 - save app globals
     - app name
     - current workspace path (could get from url)
+
+- animations
+    - note creation slide-in
+    - note deletion fade-out
 
 - render link-only bodies specially
 

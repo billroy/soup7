@@ -156,10 +156,11 @@ p {
     </div>
 
     <div ng-show='workspace.debug'>
+        <p></p>
         <div>Workspace: {{workspace}}</div>
         <div>Notes: <div ng-repeat='note in notes'>{{note}}</div></div>
         <div>Color: {{pickedColor}}</div>
-        <div>Resize: {{drag.resize}}</div>
+        <div>Resize: {{drag.resizing}}</div>
         <div>Picker: {{isColorPickerVisible()}}</div>
     </div>
 
@@ -316,7 +317,7 @@ function NotebookController($scope, $timeout, $window) {
             left: note.x, 
             top: note.y, 
             width: note.w,
-            cursor: note._resizable ? 'col-resize' : 'move'
+            cursor: $scope.drag.resizable ? 'col-resize' : 'move'
         }
     };
 
@@ -417,12 +418,12 @@ function NotebookController($scope, $timeout, $window) {
     // mouse pointer indication
     $scope.mouseover = function(note, event) {
         if ($scope.inResizeZone(note, event)) {
-            note._resizable = 1;
+            $scope.drag.resizable = 1;
         }
-        else delete note._resizable;
+        else delete $scope.drag.resizable;
     };
     $scope.mouseleave = function(note, event) {
-        delete note._resizable;
+        delete $scope.drag.resizable;
     };
 
     // drag and drop
@@ -462,12 +463,12 @@ function NotebookController($scope, $timeout, $window) {
         var note = $scope.notes[$scope.drag.noteId];
         if ($scope.inResizeZone(note, event)) {
             e.dataTransfer.setDragImage(angular.element('.dragImage')[0], 0, 0);
-            $scope.drag.resize = true;
+            $scope.drag.resizing = true;
             $scope.drag.startingWidth = note.w;
         }
         else {
             $scope.drag.noteElement.style.opacity = 0.4;
-            $scope.drag.resize = false;
+            $scope.drag.resizing = false;
         }
     };
     $scope.dragover = function(event) {
@@ -487,7 +488,7 @@ function NotebookController($scope, $timeout, $window) {
         //console.log('dragleave', event);
     };
     $scope.dragging = function(event) {
-        if ($scope.drag.resize) {
+        if ($scope.drag.resizing) {
             var e = event.originalEvent;
             var delta = e.offsetX - $scope.drag.offsetX;
             var newWidth = $scope.drag.startingWidth + delta;
@@ -503,7 +504,7 @@ function NotebookController($scope, $timeout, $window) {
         var e = event.originalEvent;
         var target = e.target;
         var id = target.id;
-        if ($scope.drag.resize) {
+        if ($scope.drag.resizing) {
             $scope.saveNote($scope.notes[$scope.drag.noteId]);
             $scope.drag = {};
         }
@@ -720,14 +721,21 @@ function NotebookController($scope, $timeout, $window) {
             obj[attr] = newValue;
         });
 
-        // watch isColorPickerVisible to become false and saveNote 
-        var colorPickerWatch = $scope.$watch('isColorPickerVisible()', function(newValue, oldValue) {
-            if (oldValue == true && newValue == false) {
-                if (callback) callback(obj);
-                colorWatch();       // stop watching: call the remove() function
-                colorPickerWatch();
+        // watch isColorPickerVisible to become false and saveNote
+        // $watch doesn't work here until Angular sees an event later
+        var checkInterval = 100;
+        var pickerLastState = $scope.isColorPickerVisible();
+        var watchPickerDisappear = function() {
+            var pickerNewState = $scope.isColorPickerVisible();
+            if (pickerLastState && !pickerNewState) {   // look for falling edge
+                if (callback) callback(obj);    // fire the callback
+                colorWatch();       // stop watching color: call the remove() function
             }
-        });
+            else {
+                $timeout(watchPickerDisappear, checkInterval);
+            }
+        };
+        watchPickerDisappear();
     };
 
     $scope.hideMenu = function() {
