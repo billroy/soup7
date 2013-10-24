@@ -148,10 +148,12 @@ p {
     <div class='commandBar'>
         <div class='logo'>Note Soup</div>
         <select class='workspaceSelector' name='workspace' 
-            ng-model='path'
+            ng-model='app.path'
             ng-options='w for w in workspaces'></select>
         <form name='commandEntry' ng-submit='addNoteFromForm()'>
-            <input type='text' name='newNoteText' class='textInput' ng-model='newNoteText'/>
+            <input type='text' name='newNoteText' 
+                class='textInput' ng-model='newNoteText'
+                placeholder='Type here and press Enter to create a new note.'/>
         </form>
     </div>
 
@@ -292,8 +294,11 @@ function NotebookController($scope, $timeout, $window) {
         $scope.saveWorkspace();
     };
 
-    $scope.appName = 'notesoup'
-    $scope.path = 'inbox';
+    $scope.app = {
+        appName: 'notesoup',
+        path: 'inbox'
+    };
+
     $scope.notes = {};
     $scope.workspaceId = 'Workspace';
 
@@ -354,8 +359,8 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     // localStorage key for any object with a .i field
-    $scope.getKey = function(obj) {
-        return [$scope.appName, $scope.path, obj.i].join('/');
+    $scope.getKey = function(obj, path) {
+        return [$scope.app.appName, path ? path : $scope.app.path, obj.i].join('/');
     };
     
     // load notes from localStorage
@@ -363,8 +368,8 @@ function NotebookController($scope, $timeout, $window) {
         var allKeys = Object.keys(localStorage);
         angular.forEach(allKeys, function(key, index) {
             var keyParts = key.split('/');
-            if (keyParts[0] != $scope.appName) return;
-            if (keyParts[1] != $scope.path) return;
+            if (keyParts[0] != $scope.app.appName) return;
+            if (keyParts[1] != $scope.app.path) return;
             if (keyParts[2][0] == 'N') {
                 var note = JSON.parse(localStorage[key]);
                 $scope.updateNote(note);
@@ -381,8 +386,9 @@ function NotebookController($scope, $timeout, $window) {
     //$scope.loadSampleNotes();
     $scope.loadNotes();
 
-    $scope.saveNote = function(note) {
-        var key = $scope.getKey(note);
+    // save note to optional path
+    $scope.saveNote = function(note, path) {
+        var key = $scope.getKey(note, path);
         try {
             localStorage.setItem(key, JSON.stringify(note));
         } catch(e) {
@@ -393,6 +399,12 @@ function NotebookController($scope, $timeout, $window) {
     $scope.deleteNote = function(note) {
         localStorage.removeItem($scope.getKey(note));
         delete $scope.notes[note.i];
+    };
+    
+    $scope.sendNote = function(note, path) {
+        if (!path) return;  // TODO: Validate path for newWorkspace
+        $scope.saveNote(note, path);
+        $scope.deleteNote(note);
     };
     
     $scope.deleteAllNotes = function() {

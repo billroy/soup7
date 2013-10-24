@@ -24,8 +24,7 @@ BASIC FEATURES
         watch screen width
     - make note background container auto size?
 
-- move menu state to menu{}
-- move picker state to picker{}
+- make the placeholder text in the input go away after a note is created
 
 - Z-handling for new notes, dragged notes
     - bug: new notes show up under other ones
@@ -55,10 +54,6 @@ BASIC FEATURES
 - workspace menu
     - workspace selector
         - load all workspaces at startup [name, notes, ...]
-
-- save app globals
-    - app name
-    - current workspace path (could get from url)
 
 - animations
     - note creation slide-in
