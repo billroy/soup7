@@ -183,8 +183,8 @@ p {
             ng-mouseover='mouseover(note, $event)'
             ng-mouseleave='mouseleave(note, $event)'
             ng-style='noteTitleStyle(note)'>
-            <span style='cursor:pointer' ng-click='toggleText(note)'>
-                <svg ng-hide='note.d' width='12' height='12'>
+            <div style='cursor:pointer; float:left' ng-click='toggleText(note)'>
+                <svg ng-hide='note.d' width='14' height='12'>
                     <circle cx='8' cy='7' r='2' 
                         ng-style='{fill:note.c, stroke:note.c}'/>
                 </svg>
@@ -194,15 +194,15 @@ p {
                         style='fill:#000; stroke:#000;'/>
                 </svg>
 -->
-                <svg ng-show='note.d' width='12' height='12'>
+                <svg ng-show='note.d' width='14' height='12'>
                     <path d='M4,5L7,9L10,5Z'
                         ng-style='{fill:note.c, stroke:note.c}'/>
                 </svg>
-            </span>
-            <span class='notetitle' 
+            </div>
+            <div class='notetitle' style='float:none'
                 ng-dblclick='editTitle(note)'
                 ng-hide='note._editingTitle'>{{note.n}}
-            </span>
+            </div>
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
                     ng-model='note.n'>
@@ -274,9 +274,7 @@ p {
 /* Note attributes:
     a b:background c:color d:displayText e f g h:height i:id
     j k l m n:title o p q r s t:text u v w:width x:left y:top z:zindex
-s:selected
-e:error editing editable
-o:opacity
+    maybe: o:opacity k:kind (workspace/svg) s:selected e:error editing editable
 */
 
 window.app = angular.module('NoteSoup', ['ui.event', 'colorpicker.module']);
@@ -378,7 +376,7 @@ function NotebookController($scope, $timeout, $window) {
         if (id > $scope.nextNoteId) $scope.nextNoteId = id + 1;
     };
 
-    // during load, some notes become attached to the old (default) workspace object
+    // during load, some notes are bound to the old (default) workspace object
     // re-attach all the prototypes here so chaining works for attribute inheritance
     $scope.setNotePrototypes = function() {
         angular.forEach($scope.notes, function(note, index) {
@@ -446,6 +444,41 @@ function NotebookController($scope, $timeout, $window) {
         $scope.nextNoteId = 1;
     };
 
+    $scope.wipeLocalStorage = function() {
+        if (!confirm('Really delete EVERYTHING in LocalStorage for this domain?')) return;
+        if (!confirm('Really, really delete EVERYTHING in LocalStorage for this domain?')) return;
+        if (!confirm('Really, really, really delete EVERYTHING in LocalStorage for this domain?')) return;
+        var allKeys = Object.keys(localStorage);
+        angular.forEach(allKeys, function(key, index) {
+            localStorage.removeItem(key);
+        });
+        location.reload();      // reboot to empty state
+    };
+
+    $scope.makeNote = function(title, text) {
+        var newNote = {};
+        angular.extend(newNote, {
+            i: $scope.newNoteId(),
+            d: 1,
+            n: title,
+            t: text,
+            x: Math.floor(Math.random() * 1024),
+            y: Math.floor(Math.random() * 1024),
+            z: $scope.topZ() + 1
+        });
+        $scope.updateNote(newNote);
+        $scope.saveNote($scope.notes[newNote.i]);
+    };
+
+    $scope.forceStorageOverflow = function() {
+        var i = 1;
+        var t0 = new Date().getTime();
+        while (i++) {
+            var elapsed = new Date().getTime() - t0;
+            $scope.makeNewNote('Test note: ' + i, 'Elapsed: ' + elapsed);
+        }
+    };
+
     $scope.workspaces = ['inbox', 'trash'];
     
     $scope.saveWorkspace = function() {
@@ -459,14 +492,23 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     // Drag and Drop
-    //
+    //    
+    $scope.drag = {};
+    $scope.resizeMargin = 36;
+
     // mouse pointer indication
+    $scope.inResizeZone = function(note, event) {
+        var e = event.originalEvent;
+        return (e.offsetX > (note.w - $scope.resizeMargin));
+    };
+
     $scope.mouseover = function(note, event) {
         if ($scope.inResizeZone(note, event)) {
             $scope.drag.resizable = 1;
         }
         else delete $scope.drag.resizable;
     };
+
     $scope.mouseleave = function(note, event) {
         delete $scope.drag.resizable;
     };
@@ -477,15 +519,6 @@ function NotebookController($scope, $timeout, $window) {
             e.preventDefault();     // Necessary. Allows us to drop.
         }
     };
-
-    $scope.resizeMargin = 36;
-
-    $scope.inResizeZone = function(note, event) {
-        var e = event.originalEvent;
-        return (e.offsetX > (note.w - $scope.resizeMargin));
-    };
-
-    $scope.drag = {};
 
     $scope.dragstart = function(event) {
         if ($scope.drag.active) return true;
@@ -623,8 +656,10 @@ function NotebookController($scope, $timeout, $window) {
         return false;
     };
 
-    $scope.nextX = 48 + 24 * Math.floor(Math.random()*6);
-    $scope.nextY = 24 + 24 * Math.floor(Math.random()*6);
+    // randomize new note position so notes are less likely 
+    // to collide between sessions
+    $scope.nextX = 24 + 24 * Math.floor(Math.random()*6);
+    $scope.nextY = 48 + 24 * Math.floor(Math.random()*6);
     $scope.nextIncrement = 24;
     $scope.nextXPos = function() {
         $scope.nextX += $scope.nextIncrement;
@@ -780,7 +815,9 @@ function NotebookController($scope, $timeout, $window) {
         {t:'Set Default Note Color',        x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
         {t:'Set Default Note Background',   x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
         {s:1},        
-        {t:'Delete All Notes',              x:'deleteAllNotes();hideMenu()'},
+        {t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
+        {s:1},        
+        {t:'Wipe LocalStorage',             x:'wipeLocalStorage();hideMenu()'},
         {s:1},
         {t:'Toggle Debug',                  x:'setDebug(!workspace.debug);hideMenu()'}
     ];

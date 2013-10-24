@@ -3,8 +3,6 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: remove gray blank space to the left of the workspace
-
 - bug: when title wraps it looks ugly (make it a div?)
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
@@ -12,9 +10,7 @@ BUGS
 - bug: click to drag on image-note's image -> alert "bogus note id"
 - bug: Enter should end title edit
 - bug: stale target highlighting after dragdrop (disabled for now)
-- bug: disallow drag off left or top
 - bug: cursor pointer should be resize cursor during resize
-- bug: nextX resets on page refresh, making new notes obscure old ones
 - bug: make title html-ok
 
 ========================================
@@ -34,15 +30,18 @@ BASIC FEATURES
         - switch there
     - load all workspaces at startup [name, notes, ...]
     - make the workspaceSelector work
+        - set $scope.workspace
         - set $scope.notes
         - set $scope.app.path
+
     - sendNote: monkeypatch $scope
     - deleteNote: sendNote(note, 'trash')
         - deleteNote in trash: really delete
             - extra prompt
     - Send To >: move notes between workspaces
         - workspace dropdown
-    - deleteEverything to nuke localStorage and start over
+    - Clone Workspace To...: copy notes and workspace settings
+        - validate pathname carefully
 
 - storage overflow testing
     - test note generator
@@ -52,6 +51,13 @@ BASIC FEATURES
     - workspace open/close
     - note creation slide-in
     - note deletion fade-out
+
+- templates
+    - stock widgets
+        - clock
+        - calendar
+        - clickable color palette
+            - dropdown for target
 
 - note widget
     - append-text input
@@ -63,7 +69,14 @@ BASIC FEATURES
     - after editTitle
 
 - reZ on load?
-- set grid
+    - maybe when Z hits some big number?
+    [{i:note.i, z:note.z},,,]
+    sort by note.z
+    set note.z to index in sorted output
+    save each note (ouch)
+
+- workspace:set grid
+- templates
 - feature: cancel color picker change
 
 - object attribute editor
