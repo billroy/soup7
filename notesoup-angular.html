@@ -148,7 +148,7 @@ p {
     <div class='commandBar'>
         <div class='logo'>Note Soup</div>
         <select class='workspaceSelector' name='workspace' 
-            ng-model='selectedWorkspace'
+            ng-model='path'
             ng-options='w for w in workspaces'></select>
         <form name='commandEntry' ng-submit='addNoteFromForm()'>
             <input type='text' name='newNoteText' class='textInput' ng-model='newNoteText'/>
@@ -227,7 +227,7 @@ p {
         </div>
     </div>
 
-    <div class='noteMenu' ng-show='showingNoteMenu'
+    <div class='noteMenu' ng-show='menu.showingNoteMenu'
         ng-mouseleave='hideMenu()'>
         <div ng-repeat='item in noteMenu'>
             <div ng-hide='item.s'
@@ -659,28 +659,33 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.noteMenu = [
-        {t:'Edit Note Body',        x:'editText(selectedNote);hideMenu()'},
-        {t:'Edit Note Title',       x:'editTitle(selectedNote);hideMenu()'},
+        {t:'Edit Note Body',        x:'editText(menu.selectedNote);hideMenu()'},
+        {t:'Edit Note Title',       x:'editTitle(menu.selectedNote);hideMenu()'},
         {s:1},
-        {t:'Set Text Color',        x:'setNoteColor("c", selectedNote, $event);hideMenu()'},
-        {t:'Set Background Color',  x:'setNoteColor("b", selectedNote, $event);hideMenu()'},
+        {t:'Set Text Color',        x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
+        {t:'Set Background Color',  x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
         {s:1},
-        {t:'Duplicate Note',        x:'duplicateNote(selectedNote);hideMenu()'},
+        {t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
         {s:1},
-        {t:'Delete Note',           x:'deleteNote(selectedNote);hideMenu()'},
+        {t:'Delete Note',           x:'deleteNote(menu.selectedNote);hideMenu()'},
         {t:'Delete All Notes',      x:'deleteAllNotes();hideMenu()'},
         {s:1},
         {t:'Set Workspace Background',  x:'setWorkspaceColor("b", workspace, $event);hideMenu()'}       
     ];
 
+    $scope.menu = {};
     $scope.showNoteMenu = function(note, event) {
-        $scope.selectedNote = note;
-        $scope.showingNoteMenu = true;
-        $scope.menuX = event.clientX;
-        $scope.menuY = event.clientY;
+        angular.extend($scope.menu, {
+            selectedNote: note,
+            showingNoteMenu: true,
+            x: event.clientX,
+            y:event.clientY
+        });
+
+        // TODO: position the menu with an ng-style so this isn't needed
         angular.element('.noteMenu').css({
-            left: $scope.menuX,
-            top: $scope.menuY
+            left: $scope.menu.x,
+            top: $scope.menu.y
         });
     };
 
@@ -690,8 +695,8 @@ function NotebookController($scope, $timeout, $window) {
         $scope.showingColorPicker = true;
         angular.element('.colorPickerPlaceholder').click();
         angular.element('.colorpicker').css({
-            left: $scope.menuX,
-            top: $scope.menuY
+            left: $scope.menu.x,
+            top: $scope.menu.y
         });        
     };
 
@@ -739,10 +744,7 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.hideMenu = function() {
-        delete $scope.showingNoteMenu;
-        delete $scope.selectedNote;
-        delete $scope.showingColorPicker;
-        delete $scope.selectedAttr;
+        $scope.menu = {};
     };
 
 };

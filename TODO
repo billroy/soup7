@@ -16,12 +16,13 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- make command bar sticky to top of screen
-    - position absolute
-    - watch scroll
-- make command bar full width of screen
-    watch screen width
-- make note background container auto size?
+- command bar
+    - make command bar sticky to top of screen
+        - position absolute
+        - watch scroll
+    - make command bar full width of screen
+        watch screen width
+    - make note background container auto size?
 
 - move menu state to menu{}
 - move picker state to picker{}
