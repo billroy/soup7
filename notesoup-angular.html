@@ -156,11 +156,11 @@ p {
     </div>
 
     <div ng-show='workspace.debug'>
-        Workspace: {{workspace}}
-        Notes: <div ng-repeat='note in notes'>{{note}}</div>
-        Color: {{pickedColor}}
-        Resize: {{drag.resize}}
-        Picker: {{isColorPickerVisible()}}
+        <div>Workspace: {{workspace}}</div>
+        <div>Notes: <div ng-repeat='note in notes'>{{note}}</div></div>
+        <div>Color: {{pickedColor}}</div>
+        <div>Resize: {{drag.resize}}</div>
+        <div>Picker: {{isColorPickerVisible()}}</div>
     </div>
 
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
@@ -247,9 +247,8 @@ p {
 </div>
 
 <!-- drag image -->
-<svg class='dragImage' width='12' height='12'>
-    <path d='M9,3L9,9 M3,6L9,6 M5,3L9,6 M5,9L9,6'
-        style='stroke:#000;'/>
+<svg class='dragImage' width='1' height='1'>
+    <path d='M1,1'/>
 </svg>
 
 <script type='text/javascript'>

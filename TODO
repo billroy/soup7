@@ -3,6 +3,8 @@ angular-notesoup todo
 ========================================
 BUGS
 
+- bug: resize doesn't work on safari
+
 - bug: color picker still appears up until cursor mouseover another element
 
 - bug: when title wraps it looks ugly (make it a div?)
