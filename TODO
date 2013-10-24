@@ -3,7 +3,7 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: remove gray padding to the left of the workspace
+- bug: remove gray blank space to the left of the workspace
 
 - bug: when title wraps it looks ugly (make it a div?)
 - bug: c:'white' causes body text to disappear
@@ -28,19 +28,21 @@ BASIC FEATURES
 
 - workspace selector
     - app-wide id uniqueness
-        - put nextid in a app{}
         - compute it at load time
-    - scope. $N is the currently selected notes
-    - $scope.workspaces[$app.path].notes
-    - load all workspaces at startup [name, notes, ...]
-    - sendNote: move in-scope note
-    - move notes between workspaces
-        - workspace dropdown
     - Add Workspace command
-        - need defaultWorkspace
-        - change path & set workspace attrs
-        - save a default workspace note
-    - deleteNote -> moveToTrash    
+        - save a copy of the default? current? workspace settings
+        - switch there
+    - load all workspaces at startup [name, notes, ...]
+    - make the workspaceSelector work
+        - set $scope.notes
+        - set $scope.app.path
+    - sendNote: monkeypatch $scope
+    - deleteNote: sendNote(note, 'trash')
+        - deleteNote in trash: really delete
+            - extra prompt
+    - Send To >: move notes between workspaces
+        - workspace dropdown
+    - deleteEverything to nuke localStorage and start over
 
 - storage overflow testing
     - test note generator
@@ -50,8 +52,6 @@ BASIC FEATURES
     - workspace open/close
     - note creation slide-in
     - note deletion fade-out
-
-- object attribute editor
 
 - note widget
     - append-text input
@@ -66,6 +66,10 @@ BASIC FEATURES
 - set grid
 - feature: cancel color picker change
 
+- object attribute editor
+
+- backup via email
+    - paste []
 - undo/redo
 - mailto
 - export

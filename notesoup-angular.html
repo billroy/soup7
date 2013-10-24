@@ -9,17 +9,46 @@
 <script src='js/ui-utils/modules/event/event.js'></script>
 <script src='js/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js'></script>
 
-<link href='http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' 
-    rel='stylesheet'/>
+<link href='http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' rel='stylesheet'/>
 <link href='js/angular-bootstrap-colorpicker/css/colorpicker.css' rel='stylesheet'/>
 
 <style type='text/css'>
 body {
     background-color: black;
+    padding-left: 0px;
 }
 .notebook {
     width: 2048px;
     height:2048px;
+}
+.commandBar {
+    background: black;
+    color: white;
+    height: 42px;
+    border: 1px solid lightgray;
+    border-radius: 6px;
+    margin: 0 0 0 0;
+}
+.logo {
+    float: left;
+    text-align: center;
+    width: 96px;
+    margin: 12px 0 0 0;
+}
+.textInput {
+    background: white;
+    width: 512px;
+    color: blue;
+    float: left;
+    margin: 6px 0 0 6px;
+    height: 24px;
+}
+.workspaceSelector {
+    float: left;
+    font-size: 0.8em;
+    width: 96px;
+    height: 18px;
+    margin: 1em 1em 0 1em;
 }
 .note {
     position: absolute;
@@ -90,36 +119,6 @@ div.rule {
     background-color: lightgray;
     margin-top: 6px;
     margin-bottom: 6px;
-}
-.commandBar {
-    background: black;
-    color: white;
-    width: 1024px;
-    height: 42px;
-    border: 1px solid lightgray;
-    border-radius: 6px;
-    margin: 0 0 0 0;
-}
-.logo {
-    float: left;
-    text-align: center;
-    width: 96px;
-    margin: 12px 0 0 0;
-}
-.textInput {
-    background: white;
-    width: 512px;
-    color: blue;
-    float: left;
-    margin: 6px 0 0 6px;
-    height: 24px;
-}
-.workspaceSelector {
-    float: left;
-    font-size: 0.8em;
-    width: 96px;
-    height: 18px;
-    margin: 1em 1em 0 1em;
 }
 p {
     margin-bottom: 0em;
@@ -263,12 +262,13 @@ p {
             colorpicker-position='right' 
             class='colorPickerPlaceholder span2' ng-model='pickedColor'></span>
     </div>
+
+    <!-- drag image -->
+    <svg class='dragImage' width='1' height='1'>
+        <path d='M1,1'/>
+    </svg>
 </div>
 
-<!-- drag image -->
-<svg class='dragImage' width='1' height='1'>
-    <path d='M1,1'/>
-</svg>
 
 <script type='text/javascript'>
 /* Note attributes:
@@ -882,9 +882,7 @@ function NotebookController($scope, $timeout, $window) {
     $scope.hideMenu = function() {
         $scope.menu = {};
     };
-
 };
 </script>
-
 </body>
 </html>
