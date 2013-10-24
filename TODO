@@ -16,20 +16,20 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- BUG: note menu comes up under workspace menu
-    - can't get to notemenu
-
 - Z-handling for new notes, dragged notes
     - bug: new notes show up under other ones
+    - toTop()
+
+- app-wide id uniqueness
+    - put nextid in a key
+    - or compute it at load time
 
 - dragdrop
-    - remove drag image and move the note itself
-    - gridded resize
-    - gridded drag
     - note toTop() on drag
         - default note z
         - reZ on load?
-    - drag the real note; suppress the ghost?
+    - gridded resize
+    - gridded drag
     - drop note on note
 
 - use $scope.eval in .commands
@@ -37,7 +37,7 @@ BASIC FEATURES
 
 - workspace menu
     - test: feature: set default note color and background, per workspace
-    - test: setdebug
+    - bug: setdebug doesn't work
 
 - storage overflow testing
     - test note generator
@@ -45,7 +45,7 @@ BASIC FEATURES
 
 - make title html-ok
 
-- note attribute editor
+- object attribute editor
 
 - workspace menu
     - workspace selector

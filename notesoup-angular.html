@@ -323,7 +323,7 @@ function NotebookController($scope, $timeout, $window) {
         debug: false,
         b:'lightgray',
         defaultNote: {
-            w:150, b:'lightyellow', c:'black',
+            w:150, b:'lightyellow', c:'black', 'z-index':0
         }
     };
     
@@ -338,7 +338,8 @@ function NotebookController($scope, $timeout, $window) {
             left: note.x, 
             top: note.y, 
             width: note.w,
-            cursor: $scope.drag.resizable ? 'col-resize' : 'move'
+            cursor: $scope.drag.resizable ? 'col-resize' : 'move',
+            'z-index': note.z || 0
         }
     };
 
@@ -354,6 +355,20 @@ function NotebookController($scope, $timeout, $window) {
             $scope.nextNoteId++;
         }
         return 'N' + $scope.nextNoteId;
+    };
+
+    $scope.topZ = function() {
+        var topz = 0;
+        angular.forEach($scope.notes, function(note, index) {
+            if (note.hasOwnProperty('z')) {
+                if (note.z > topz) topz = note.z;
+            }
+        });
+        return topz;
+    };
+    
+    $scope.toTop = function(note) {
+        note.z = $scope.topZ() + 1;   // caller must saveNote() to make this stick
     };
 
     $scope.updateNote = function(note) {
@@ -491,13 +506,14 @@ function NotebookController($scope, $timeout, $window) {
         $scope.drag.noteId = id.slice(5);
 
         var note = $scope.notes[$scope.drag.noteId];
+        $scope.toTop(note);
         e.dataTransfer.setDragImage(angular.element('.dragImage')[0], 0, 0);
         if ($scope.inResizeZone(note, event)) {
             $scope.drag.resizing = true;
             $scope.drag.startingWidth = note.w;
         }
         else {
-            $scope.drag.noteElement.style.opacity = 0.6;
+            $scope.drag.noteElement.style.opacity = 0.8;
         }
     };
     $scope.dragover = function(event) {
@@ -617,7 +633,8 @@ function NotebookController($scope, $timeout, $window) {
                 d: 1,
                 t: this.newNoteText,
                 x: this.nextXPos(),
-                y: this.nextYPos()
+                y: this.nextYPos(),
+                z: this.topZ() + 1
             });
             this.updateNote(newNote);
             this.saveNote(this.notes[newNote.i]);
@@ -630,7 +647,8 @@ function NotebookController($scope, $timeout, $window) {
                 i: $scope.newNoteId(),
                 n: lines[0],
                 x: $scope.nextXPos(),
-                y: $scope.nextYPos()
+                y: $scope.nextYPos(),
+                z: this.topZ() + 1
             };
             if (lines.length > 1) {
                 // html in the body: replace the slashes
