@@ -3,11 +3,12 @@ angular-notesoup todo
 ========================================
 BUGS
 
-- bug: removegray padding to the left of the workspace
+- bug: remove gray padding to the left of the workspace
 
 - bug: when title wraps it looks ugly (make it a div?)
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
+        - need darker()/lighter()
 - bug: click to drag on image-note's image -> alert "bogus note id"
 - bug: Enter should end title edit
 - bug: stale target highlighting after dragdrop (disabled for now)
@@ -19,19 +20,15 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- reZ on load?
-
 - dragdrop
-    - gridded resize
-    - gridded drag
     - drop note on note
+        - bug: stale target highlighting after dragdrop (disabled for now)
 
 - use $scope.eval in .commands
-- feature: cancel color picker change
 
 - workspace menu
     - test: feature: set default note color and background, per workspace
-    - bug: setdebug doesn't work
+        - bug: after refresh, notes look different
 
 - workspace selector
     - app-wide id uniqueness
@@ -53,28 +50,25 @@ BASIC FEATURES
     - test note generator
     - forceStorageOverflow
 
-- render link-only bodies specially
 - animations
     - workspace open/close
     - note creation slide-in
     - note deletion fade-out
+
 - object attribute editor
 
 - note widget
-    - double click dropdown button 
-        - if closed
-            - open
-            - if text is null: editText and focus the edit
-        - if open
-            - close edittext and text dropdown
     - append-text input
-    - better editor
-        - ui-ace
+    - better editor: ui-ace?
 
 - auto-adjust title width
     http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
     - on load
     - after editTitle
+
+- reZ on load?
+- set grid
+- feature: cancel color picker change
 
 - undo/redo
 - mailto

@@ -296,26 +296,18 @@ app.directive('ngRightClick', function($parse) {
 
 function NotebookController($scope, $timeout, $window) {
 
-    var sampleNotes = [
-        {i:'n1', x:100, y:100, n:'first note', t:'text of first note'},
-        {i:'n2', x:200, y:200, n:'second note', t:'text of second note', c:'blue'},
-        {i:'n3', x:300, y:300, n:'third note', t:'text of third note', b:'lightgreen'},
-        {i:'n4', x:400, y:400, n:'fourth note', t:'text of fourth note', b:'blue', c:'white'},
-        {i:'n5', x:500, y:500, n:'fifth note', t:'text of fifth note', b:'lightgreen', c:'lightgray'},
-        {i:'n6', x:600, y:600, n:'sixth note', t:'text of sixth note', b:'magenta'}
-    ];
-
     $scope.setDebug = function(value) {
         $scope.workspace.debug = value;
         $scope.saveWorkspace();
     };
+    
+    $scope.notes = {};
 
     $scope.app = {
         appName: 'notesoup',
         path: 'inbox'
     };
 
-    $scope.notes = {};
     $scope.workspaceId = 'Workspace';
 
     $scope.defaultWorkspace = {
@@ -324,7 +316,7 @@ function NotebookController($scope, $timeout, $window) {
         b:'lightgray',
         grid: 24,
         defaultNote: {
-            w:150, b:'lightyellow', c:'black', 'z-index':0
+            w:144, b:'lightyellow', c:'black', 'z-index':0
         }
     };
     $scope.workspace = {};
@@ -386,12 +378,6 @@ function NotebookController($scope, $timeout, $window) {
         if (id > $scope.nextNoteId) $scope.nextNoteId = id + 1;
     };
 
-    $scope.loadSampleNotes = function() {
-        angular.forEach(sampleNotes, function(sampleNote, index) {
-            $scope.updateNote(sampleNote);
-        });
-    };
-
     // localStorage key for any object with a .i field
     // path is optional; defaults to app.path
     $scope.getKey = function(obj, path) {
@@ -413,13 +399,12 @@ function NotebookController($scope, $timeout, $window) {
                 angular.copy($scope.defaultWorkspace, $scope.workspace);
                 angular.extend($scope.workspace, JSON.parse(localStorage[key]));
             }
-            else { 
-                alert('Deleting unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
-                localStorage.removeItem(key);
+            else {
+                alert('Unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
+                if ($scope.workspace.debug = 666) localStorage.removeItem(key);
             }
         });
     };
-    //$scope.loadSampleNotes();
     $scope.loadNotes();
 
     // save note to optional path
@@ -464,6 +449,8 @@ function NotebookController($scope, $timeout, $window) {
         $scope.saveNote(note);
     };
 
+    // Drag and Drop
+    //
     // mouse pointer indication
     $scope.mouseover = function(note, event) {
         if ($scope.inResizeZone(note, event)) {
@@ -475,7 +462,6 @@ function NotebookController($scope, $timeout, $window) {
         delete $scope.drag.resizable;
     };
 
-    // drag and drop
     $scope.stopEvent = function(event) {
         var e = event.originalEvent;
         if (e.preventDefault) {
@@ -484,6 +470,7 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.resizeMargin = 36;
+
     $scope.inResizeZone = function(note, event) {
         var e = event.originalEvent;
         return (e.offsetX > (note.w - $scope.resizeMargin));
@@ -538,6 +525,7 @@ function NotebookController($scope, $timeout, $window) {
         $scope.stopEvent(event);
         return false;
     };
+
     $scope.dragenter = function(event) {
         // this / e.target is the current hover target.
         //event.originalEvent.target.classList.add('over');
@@ -545,6 +533,7 @@ function NotebookController($scope, $timeout, $window) {
         $scope.stopEvent(event);
         return false;
     };
+
     $scope.dragleave = function(event) {
         //event.originalEvent.target.classList.remove('over');
         //console.log('dragleave', event);
@@ -566,6 +555,7 @@ function NotebookController($scope, $timeout, $window) {
         if ($scope.drag.resizing) {
             var dx = e.offsetX - $scope.drag.offsetX;
             var newWidth = $scope.drag.startingWidth + dx;
+            if ($scope.workspace.grid && !e.shiftKey) newWidth = grid * Math.floor(newWidth/grid);
             if (newWidth < 48) newWidth = 48;
             dragNote.w = newWidth;
         }
@@ -583,8 +573,8 @@ function NotebookController($scope, $timeout, $window) {
             //$scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.x + $window.pageXOffset;
             //$scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.y + $window.pageYOffset;
         }
-        //console.log('drag', event); 
     };
+
     $scope.drop = function(event) {
         $scope.stopEvent(event);
         if (!$scope.drag.active) return;
@@ -616,6 +606,7 @@ function NotebookController($scope, $timeout, $window) {
         }
         return false;
     };
+
     $scope.dragend = function(event) { 
        // this/e.target is the source node.
         var e = event.originalEvent;
@@ -623,8 +614,8 @@ function NotebookController($scope, $timeout, $window) {
         return false;
     };
 
-    $scope.nextX = 24;
-    $scope.nextY = 24;
+    $scope.nextX = 48 + 24 * Math.floor(Math.random()*6);
+    $scope.nextY = 24 + 24 * Math.floor(Math.random()*6);
     $scope.nextIncrement = 24;
     $scope.nextXPos = function() {
         $scope.nextX += $scope.nextIncrement;
@@ -782,7 +773,7 @@ function NotebookController($scope, $timeout, $window) {
         {s:1},        
         {t:'Delete All Notes',              x:'deleteAllNotes();hideMenu()'},
         {s:1},
-        {t:'Toggle Debug',                  x:'setDebug(!!workspace.debug)'}
+        {t:'Toggle Debug',                  x:'setDebug(!workspace.debug);hideMenu()'}
     ];
 
     $scope.menu = {};
