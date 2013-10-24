@@ -13,9 +13,17 @@ BUGS
 - bug: stale target highlighting after dragdrop (disabled for now)
 - bug: disallow drag off left or top
 - bug: cursor pointer should be resize cursor during resize
+- bug: nextX resets on page refresh, making new notes obscure old ones
 
 ========================================
 BASIC FEATURES
+
+- make command bar sticky to top of screen
+    - position absolute
+    - watch scroll
+- make command bar full width of screen
+    watch screen width
+- make note background container auto size?
 
 - dragdrop
     - gridded resize
@@ -52,10 +60,10 @@ BASIC FEATURES
         - load all workspaces at startup [name, notes, ...]
 
 - save app globals
+    - app name
     - current workspace path (could get from url)
 
 - render link-only bodies specially
-
 
 - note widget
     - double click dropdown button 
@@ -64,7 +72,6 @@ BASIC FEATURES
             - if text is null: editText and focus the edit
         - if open
             - close edittext and text dropdown
-
     - append-text input
     - better editor
         - ui-ace
@@ -79,4 +86,3 @@ BASIC FEATURES
     http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
     - on load
     - after editTitle
-

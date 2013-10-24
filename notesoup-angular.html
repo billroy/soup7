@@ -75,6 +75,7 @@ textarea {
     border-radius: 4px;
 }
 .noteMenu div {
+    margin: .25em 0 .25em 0;
     padding: 0 .25em 0 .25em;
     cursor:default;
 }
@@ -90,11 +91,31 @@ div.rule {
     margin-top: 6px;
     margin-bottom: 6px;
 }
-div.commandbar {
-    background:darkgray;
+.commandBar {
+    background: black;
+    color: white;
+    width: 1024px;
+    height: 2.75em;
+    border: 1px solid black;
+    border-radius: 6px;
+    margin: 0.5em 0 0 0;
 }
-div.commandbar>input {
+.logo {
+    float: left;
+    text-align: center;
+    width: 96px;
+}
+.textInput {
+    background: white;
     width: 512px;
+    color: blue;
+    float: left;
+}
+.workspaceSelector {
+    float: left;
+    font-size: 0.75em;
+    width: 96px;
+    margin: 0 1em 0 1em;
 }
 p {
     margin-bottom: 0em;
@@ -120,14 +141,14 @@ p {
         dragend:"dragend($event)"
     }'>
 
-    <div class="commandBar">
-        <div>
-            <form name='newNoteEntry' ng-submit='addNoteFromForm()'>
-                <input type='text' name='newNoteText' 
-                    ng-style='{width:"80%"}'
-                    ng-model='newNoteText'/>
-            </form>
-        </div>
+    <div class='commandBar'>
+        <div class='logo'>Note Soup</div>
+        <select class='workspaceSelector' name='workspace' 
+            ng-model='selectedWorkspace'
+            ng-options='w for w in workspaces'></select>
+        <form name='commandEntry' ng-submit='addNoteFromForm()'>
+            <input type='text' name='newNoteText' class='textInput' ng-model='newNoteText'/>
+        </form>
     </div>
 
     <div ng-show='workspace.debug'>
@@ -377,6 +398,8 @@ function NotebookController($scope, $timeout, $window) {
         });
         $scope.nextNoteId = 1;
     };
+
+    $scope.workspaces = ['inbox', 'trash'];
     
     $scope.saveWorkspace = function() {
         $scope.saveNote($scope.workspace);        
