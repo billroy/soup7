@@ -66,7 +66,7 @@ textarea {
 .buttons {
     margin: 0 2em 0 2em;
 }
-.noteMenu {
+.menu {
     position: absolute;
     background: white;
     color: black;
@@ -74,12 +74,12 @@ textarea {
     border: 1px solid black;
     border-radius: 4px;
 }
-.noteMenu div {
+.menu div {
     margin: .25em 0 .25em 0;
     padding: 0 .25em 0 .25em;
     cursor:default;
 }
-.noteMenu div.highlight {
+.menu div.highlight {
     background: blue;
     color: white;
 }
@@ -135,6 +135,7 @@ p {
 <div ng-controller='NotebookController' class='notebook'
     droppable='true'
     ng-style='workspaceStyle()'
+    ng-right-click='showWorkspaceMenu(workspace, $event)'
     ui-event='{
         dragstart:"dragstart($event)", 
         drag:"dragging($event)",
@@ -153,7 +154,7 @@ p {
         <form name='commandEntry' ng-submit='addNoteFromForm()'>
             <input type='text' name='newNoteText' 
                 class='textInput' ng-model='newNoteText'
-                placeholder='Type here and press Enter to create a new note.'/>
+                placeholder='{{inputPlaceholder()}}'/>
         </form>
     </div>
 
@@ -229,9 +230,24 @@ p {
         </div>
     </div>
 
-    <div class='noteMenu' ng-show='menu.showingNoteMenu'
+    <div class='menu' id='noteMenu' 
+        ng-show='menu.showingNoteMenu'
         ng-mouseleave='hideMenu()'>
         <div ng-repeat='item in noteMenu'>
+            <div ng-hide='item.s'
+                ng-click='{{item.x}}'
+                ng-class='overclass'
+                ng-mouseenter='overclass="highlight"'
+                ng-mouseleave='overclass=""'>{{item.t}}
+            </div>
+            <div ng-show='item.s' class='rule'></div>
+        </div>
+    </div>
+
+    <div class='menu' id='workspaceMenu'
+        ng-show='menu.showingWorkspaceMenu'
+        ng-mouseleave='hideMenu()'>
+        <div ng-repeat='item in workspaceMenu'>
             <div ng-hide='item.s'
                 ng-click='{{item.x}}'
                 ng-class='overclass'
@@ -359,6 +375,7 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     // localStorage key for any object with a .i field
+    // path is optional; defaults to app.path
     $scope.getKey = function(obj, path) {
         return [$scope.app.appName, path ? path : $scope.app.path, obj.i].join('/');
     };
@@ -403,6 +420,7 @@ function NotebookController($scope, $timeout, $window) {
     
     $scope.sendNote = function(note, path) {
         if (!path) return;  // TODO: Validate path for newWorkspace
+        // todo: for multi-workspace, move the note in $scope.workspaces
         $scope.saveNote(note, path);
         $scope.deleteNote(note);
     };
@@ -558,6 +576,19 @@ function NotebookController($scope, $timeout, $window) {
         return $scope.nextY;
     };
 
+    $scope.countNotes = function() {
+        var count = 0;
+        angular.forEach($scope.notes, function (note, index) { count++; });
+        return count;
+    };
+
+    $scope.inputPlaceholder = function() {
+        var count = $scope.countNotes()
+        if (count == 0) return 'Type title/text here and press Enter to create a new note.';
+        else if (count == 1) return 'Right-click on a note or the workspace for a menu.';
+        return '';
+    };
+
     // add note via command bar
     $scope.addNoteFromForm = function() {
         // called from commandBar form, so 'this' is $scope here
@@ -679,13 +710,22 @@ function NotebookController($scope, $timeout, $window) {
         {s:1},
         {t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
         {s:1},
-        {t:'Delete Note',           x:'deleteNote(menu.selectedNote);hideMenu()'},
-        {t:'Delete All Notes',      x:'deleteAllNotes();hideMenu()'},
+        {t:'Delete Note',           x:'deleteNote(menu.selectedNote);hideMenu()'}
+    ];
+    
+    $scope.workspaceMenu = [
+        {t:'Set Workspace Background',      x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
         {s:1},
-        {t:'Set Workspace Background',  x:'setWorkspaceColor("b", workspace, $event);hideMenu()'}       
+        {t:'Set Default Note Color',        x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
+        {t:'Set Default Note Background',   x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
+        {s:1},        
+        {t:'Delete All Notes',              x:'deleteAllNotes();hideMenu()'},
+        {s:1},
+        {t:'Toggle Debug',                  x:'setDebug(!!workspace.debug)'}
     ];
 
     $scope.menu = {};
+
     $scope.showNoteMenu = function(note, event) {
         angular.extend($scope.menu, {
             selectedNote: note,
@@ -695,7 +735,22 @@ function NotebookController($scope, $timeout, $window) {
         });
 
         // TODO: position the menu with an ng-style so this isn't needed
-        angular.element('.noteMenu').css({
+        angular.element('#noteMenu').css({
+            left: $scope.menu.x,
+            top: $scope.menu.y
+        });
+    };
+
+    $scope.showWorkspaceMenu = function(workspace, event) {
+        angular.extend($scope.menu, {
+            workspace: workspace,
+            showingWorkspaceMenu: true,
+            x: event.clientX,
+            y:event.clientY
+        });
+
+        // TODO: position the menu with an ng-style so this isn't needed
+        angular.element('#workspaceMenu').css({
             left: $scope.menu.x,
             top: $scope.menu.y
         });
@@ -724,6 +779,12 @@ function NotebookController($scope, $timeout, $window) {
 
     $scope.setWorkspaceColor = function(attr, obj, event) {
         $scope.setObjectColor(attr, obj, event, function(workspace) {
+            $scope.saveWorkspace();
+        });
+    };
+
+    $scope.setDefaultNoteColor = function(attr, note, event) {
+        $scope.setObjectColor(attr, note, event, function(note) {
             $scope.saveWorkspace();
         });
     };

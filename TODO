@@ -41,7 +41,12 @@ BASIC FEATURES
 
 - use $scope.eval in .commands
 - feature: cancel color picker change
-- feature: set default note color and background, per workspace
+
+- workspace menu
+    - right click on note container
+    - move setworkspacecolor here
+    - feature: set default note color and background, per workspace
+    - setdebug
 
 - storage overflow testing
     - test note generator
