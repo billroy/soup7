@@ -318,14 +318,17 @@ function NotebookController($scope, $timeout, $window) {
     $scope.notes = {};
     $scope.workspaceId = 'Workspace';
 
-    $scope.workspace = {
+    $scope.defaultWorkspace = {
         i: $scope.workspaceId,
         debug: false,
         b:'lightgray',
+        grid: 24,
         defaultNote: {
             w:150, b:'lightyellow', c:'black', 'z-index':0
         }
     };
+    $scope.workspace = {};
+    angular.copy($scope.defaultWorkspace, $scope.workspace);
     
     $scope.workspaceStyle = function() {
         return {background: $scope.workspace.b};
@@ -366,7 +369,7 @@ function NotebookController($scope, $timeout, $window) {
         });
         return topz;
     };
-    
+
     $scope.toTop = function(note) {
         note.z = $scope.topZ() + 1;   // caller must saveNote() to make this stick
     };
@@ -407,7 +410,8 @@ function NotebookController($scope, $timeout, $window) {
                 $scope.updateNote(note);
             }
             else if (keyParts[2] == $scope.workspaceId) {
-                $scope.workspace = JSON.parse(localStorage[key]);
+                angular.copy($scope.defaultWorkspace, $scope.workspace);
+                angular.extend($scope.workspace, JSON.parse(localStorage[key]));
             }
             else { 
                 alert('Deleting unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
@@ -488,34 +492,47 @@ function NotebookController($scope, $timeout, $window) {
     $scope.drag = {};
 
     $scope.dragstart = function(event) {
-        if ($scope.drag.active) return;
-        var e = event.originalEvent;
-        angular.extend($scope.drag, {
-            offsetX: e.offsetX,
-            offsetY: e.offsetY,
-            noteElement: e.target,
-            active: true,
-        });
+        if ($scope.drag.active) return true;
 
-        // e.DataTransfer here
+        var e = event.originalEvent;
+        var id = e.target.id;
+        if (!id.match(/^note_/)) {
+            alert('Bogus note id');
+            return true;
+        }
+        id = id.slice(5);
+        if (!$scope.notes.hasOwnProperty(id)) {
+            alert('Unknown note id');
+            return true;
+        }
+        var note = $scope.notes[id];
+        $scope.toTop(note);
+
         e.dataTransfer.dropEffect = 'move';
         e.dataTransfer.effectAllowed = 'move';
-
-        var id = $scope.drag.noteElement.id;
-        if (!id.match(/^note_/)) alert('Bogus note id');
-        $scope.drag.noteId = id.slice(5);
-
-        var note = $scope.notes[$scope.drag.noteId];
-        $scope.toTop(note);
         e.dataTransfer.setDragImage(angular.element('.dragImage')[0], 0, 0);
+
         if ($scope.inResizeZone(note, event)) {
             $scope.drag.resizing = true;
             $scope.drag.startingWidth = note.w;
         }
         else {
-            $scope.drag.noteElement.style.opacity = 0.8;
+            if ($scope.workspace.grid && !e.shiftKey) $scope.snapToGrid(note);
+            e.target.style.opacity = 0.8;
         }
+
+        angular.extend($scope.drag, {
+            startingX: note.x,      // starting note position
+            startingY: note.y,
+            offsetX: e.offsetX,     // cursor offset within note at mousedown
+            offsetY: e.offsetY,
+            noteElement: e.target,
+            noteId: id,
+            active: true,
+        });
+        return false;
     };
+
     $scope.dragover = function(event) {
         //console.log('dragover', event);
         $scope.stopEvent(event);
@@ -532,17 +549,39 @@ function NotebookController($scope, $timeout, $window) {
         //event.originalEvent.target.classList.remove('over');
         //console.log('dragleave', event);
     };
+
+    $scope.snapToGrid = function(note) {
+        var grid = $scope.workspace.grid;
+        if (grid) {
+            note.x = grid * Math.floor(note.x / grid);
+            note.y = grid * Math.floor(note.y / grid);
+        }
+    };
+
     $scope.dragging = function(event) {
         var e = event.originalEvent;
+        var dragNote = $scope.notes[$scope.drag.noteId];
+        var grid = $scope.workspace.grid;
+
         if ($scope.drag.resizing) {
-            var delta = e.offsetX - $scope.drag.offsetX;
-            var newWidth = $scope.drag.startingWidth + delta;
+            var dx = e.offsetX - $scope.drag.offsetX;
+            var newWidth = $scope.drag.startingWidth + dx;
             if (newWidth < 48) newWidth = 48;
-            $scope.notes[$scope.drag.noteId].w = newWidth;
+            dragNote.w = newWidth;
         }
         else {
-            $scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.offsetX + $window.pageXOffset;
-            $scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.offsetY + $window.pageYOffset;
+            var newx = e.x - $scope.drag.offsetX + $window.pageXOffset;
+            var newy = e.y - $scope.drag.offsetY + $window.pageYOffset;
+            var dx = newx - $scope.drag.startingX;
+            var dy = newy - $scope.drag.startingY;
+			if (grid && !e.shiftKey) {
+			    dx = grid * Math.floor(dx / grid);
+    			dy = grid * Math.floor(dy / grid);
+			}
+            dragNote.x = Math.max(0, $scope.drag.startingX + dx);
+			dragNote.y = Math.max(0, $scope.drag.startingY + dy);
+            //$scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.x + $window.pageXOffset;
+            //$scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.y + $window.pageYOffset;
         }
         //console.log('drag', event); 
     };
@@ -558,14 +597,15 @@ function NotebookController($scope, $timeout, $window) {
             $scope.drag = {};
         }
         else if (!id.match(/^note_/)) {  // drop on workspace
-            $scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.offsetX + $window.pageXOffset;
-            $scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.offsetY + $window.pageYOffset;
+            //$scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.x + $window.pageXOffset;
+            //$scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.y + $window.pageYOffset;
             $scope.saveNote($scope.notes[$scope.drag.noteId]);
             $scope.drag = {};
         }
         else {        
             // TODO: drop on note
             $scope.drag = {};
+            alert('Zombie drag.');
             return false;
             var droppedNoteId = id.slice(5);
             console.log('dropped on note', droppedNoteId);

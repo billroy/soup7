@@ -3,6 +3,8 @@ angular-notesoup todo
 ========================================
 BUGS
 
+- bug: removegray padding to the left of the workspace
+
 - bug: when title wraps it looks ugly (make it a div?)
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
@@ -12,22 +14,14 @@ BUGS
 - bug: disallow drag off left or top
 - bug: cursor pointer should be resize cursor during resize
 - bug: nextX resets on page refresh, making new notes obscure old ones
+- bug: make title html-ok
 
 ========================================
 BASIC FEATURES
 
-- Z-handling for new notes, dragged notes
-    - bug: new notes show up under other ones
-    - toTop()
-
-- app-wide id uniqueness
-    - put nextid in a key
-    - or compute it at load time
+- reZ on load?
 
 - dragdrop
-    - note toTop() on drag
-        - default note z
-        - reZ on load?
     - gridded resize
     - gridded drag
     - drop note on note
@@ -39,23 +33,32 @@ BASIC FEATURES
     - test: feature: set default note color and background, per workspace
     - bug: setdebug doesn't work
 
+- workspace selector
+    - app-wide id uniqueness
+        - put nextid in a app{}
+        - compute it at load time
+    - scope. $N is the currently selected notes
+    - $scope.workspaces[$app.path].notes
+    - load all workspaces at startup [name, notes, ...]
+    - sendNote: move in-scope note
+    - move notes between workspaces
+        - workspace dropdown
+    - Add Workspace command
+        - need defaultWorkspace
+        - change path & set workspace attrs
+        - save a default workspace note
+    - deleteNote -> moveToTrash    
+
 - storage overflow testing
     - test note generator
     - forceStorageOverflow
 
-- make title html-ok
-
-- object attribute editor
-
-- workspace menu
-    - workspace selector
-        - load all workspaces at startup [name, notes, ...]
-
+- render link-only bodies specially
 - animations
+    - workspace open/close
     - note creation slide-in
     - note deletion fade-out
-
-- render link-only bodies specially
+- object attribute editor
 
 - note widget
     - double click dropdown button 
@@ -68,13 +71,12 @@ BASIC FEATURES
     - better editor
         - ui-ace
 
-- move notes between workspaces
-    - workspace dropdown
-    - add workspace command
-    - set up inbox and trash by default
-    - deleteNote -> moveToTrash    
-
 - auto-adjust title width
     http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
     - on load
     - after editTitle
+
+- undo/redo
+- mailto
+- export
+- sync
