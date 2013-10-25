@@ -18,12 +18,9 @@ BUGS
 ========================================
 BASIC FEATURES
 
-https://github.com/angular-ui/ui-utils.git
-https://github.com/buberdds/angular-bootstrap-colorpicker.git
-git submodule init
-git submodule update
-I don't think so.
-nuke their gitness and try again?
+- include the remaining dependencies in the package
+
+- push to heroku
 
 - dragdrop
     - drop note on note
