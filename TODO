@@ -25,13 +25,40 @@ BASIC FEATURES
 - use $scope.eval in .commands
 
 - workspace selector
+
+- bug: selector comes up as home each time
+
     - app-wide id uniqueness
         - compute it at load time
+    - ensure home and trash exist at startup
+        - create them if they're not there
+
     - Add Workspace command
         - make sure it isn't there already (go there?)
         - switch there
             set $app.path, $workspace, $notes
         - save a copy of the default? current? workspace settings
+
+- approach to multiple workspaces:
+    - workspaces is just an array of names used to populate the selector
+    - populated at load time as the other workspaces go by
+        - ensure home and trash are valid and create them if not
+    - load app data at startup
+        
+        - current path is preserved
+        - defaultApp
+    - workspace selector is aimed at app.path; on change:
+        - validate new path
+        - save app data
+        - reload the page
+    - watcher on app.path calls openWorkspace
+
+    $scope.$watch('app.path', function(newValue, oldValue) {
+    });
+    $scope.openWorkspace = function() {
+        $scope.workspace = $scope.workspaces[$scope.app.path].workspace;
+        $scope.notes = $scope.workspaces[$scope.app.path].notes;
+    };
 
     // todo: add notes:{} to defaultWorkspace
     $scope.setWorkspace(newPath) {

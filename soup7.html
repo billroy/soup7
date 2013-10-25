@@ -2,7 +2,7 @@
 <html>
 <!-- Copyright 2013 by Bill Roy.  Use under MIT License. -->
 <head>
-<title>note soup</title>
+<title>{{app.appName}}</title>
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'></script>
 <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
 <script src='http://code.angularjs.org/1.1.5/angular.min.js'></script>
@@ -30,10 +30,9 @@ body {
     margin: 0 0 0 0;
 }
 .logo {
+    font-size: 1.2em;
     float: left;
-    text-align: center;
-    width: 96px;
-    margin: 12px 0 0 0;
+    margin: 12px 0 0 0.5em;
 }
 .textInput {
     background: white;
@@ -45,7 +44,6 @@ body {
 }
 .workspaceSelector {
     float: left;
-    font-size: 0.8em;
     width: 96px;
     height: 18px;
     margin: 1em 1em 0 1em;
@@ -129,7 +127,7 @@ p {
 }
 </style>
 </head>
-<body ng-app='NoteSoup'>
+<body ng-app='Soup7'>
 
 <div ng-controller='WorkspaceController' class='workspace'
     ng-style='workspaceStyle()'
@@ -146,9 +144,9 @@ p {
     }'>
 
     <div class='commandBar'>
-        <div class='logo'>Note Soup</div>
+        <div class='logo'>&bull;&nbsp;Soup7</div>
         <select class='workspaceSelector' name='workspace' 
-            ng-model='app.path'
+            ng-model='selectedWorkspace'
             ng-options='w for w in workspaces'></select>
         <form name='commandEntry' ng-submit='addNoteFromForm()'>
             <input type='text' name='newNoteText' 
@@ -159,6 +157,8 @@ p {
 
     <div ng-show='workspace.debug'>
         <div>Debug info:</div>
+        <div>App: {{app}}</div>
+        <div>workspaceName: {{selectedWorkspace}}</div>
         <div>Workspace: {{workspace}}</div>
         <div>Notes: <div ng-repeat='note in notes'>{{note}}</div></div>
         <div>Color: {{pickedColor}}</div>
@@ -277,7 +277,7 @@ p {
     maybe: o:opacity k:kind (workspace/svg) s:selected e:error editing editable
 */
 
-window.app = angular.module('NoteSoup', ['ui.event', 'colorpicker.module']);
+window.app = angular.module('Soup7', ['ui.event', 'colorpicker.module']);
 
 // from http://jsfiddle.net/bcaudan/vTZZ5/
 app.directive('ngRightClick', function($parse) {
@@ -294,17 +294,48 @@ app.directive('ngRightClick', function($parse) {
 
 function WorkspaceController($scope, $timeout, $window) {
 
-    $scope.setDebug = function(value) {
-        $scope.workspace.debug = value;
-        $scope.saveWorkspace();
+    //
+    // app
+    //
+    $scope.selectedWorkspace = 'home';
+    $scope.appLoaded = false;
+    $scope.app = {
+        appName: 'Soup7',
+        workspaceName: 'home'
     };
     
-    $scope.notes = {};
-
-    $scope.app = {
-        appName: 'notesoup',
-        path: 'inbox'
+    $scope.loadApp = function() {
+        var app = localStorage[$scope.app.appName];
+        if (app) {
+            var appObj = JSON.parse(app);
+            angular.extend($scope.app, appObj);
+console.log('loadApp:', appObj);
+            $scope.selectedWorkspace = $scope.app.workspaceName;
+console.log('loadApp: set selected');
+        }
+        // todo: validate app.workspaceName
+        // todo: verify home and trash exist; create if not
+        $scope.openWorkspace();
+        $scope.appLoaded = true;
     };
+
+    $scope.saveApp = function() {
+        try {
+            localStorage.setItem($scope.app.appName, JSON.stringify($scope.app));
+        } catch(e) {
+            alert('ERROR: Could not save app!  Increase LocalStorage!');
+        }
+    };
+    
+    $scope.$watch('selectedWorkspace', function(newValue, oldValue) {
+        if (!$scope.appLoaded) return;
+        if (newValue == oldValue) return;
+        if (true || newValue != $scope.app.workspaceName) {
+            $scope.app.workspaceName = newValue;
+            $scope.saveApp();
+            location.reload();  // reboot to the new workspace
+        }
+    });
 
     $scope.workspaceId = 'Workspace';
 
@@ -319,10 +350,20 @@ function WorkspaceController($scope, $timeout, $window) {
     };
     $scope.workspace = {};
     angular.copy($scope.defaultWorkspace, $scope.workspace);
-    
+
     $scope.workspaceStyle = function() {
         return {background: $scope.workspace.b};
     };
+
+    $scope.setDebug = function(value) {
+        $scope.workspace.debug = value;
+        $scope.saveWorkspace();
+    };
+
+    //
+    // notes
+    //
+    $scope.notes = {};
 
     $scope.noteStyle = function(note) {
         return {
@@ -343,6 +384,7 @@ function WorkspaceController($scope, $timeout, $window) {
     };
 
     $scope.nextNoteId = 1;
+
     $scope.newNoteId = function() {
         while ($scope.notes.hasOwnProperty('N' + $scope.nextNoteId)) {
             $scope.nextNoteId++;
@@ -385,38 +427,48 @@ function WorkspaceController($scope, $timeout, $window) {
     };
 
     // localStorage key for any object with a .i field
-    // path is optional; defaults to app.path
-    $scope.getKey = function(obj, path) {
-        return [$scope.app.appName, path ? path : $scope.app.path, obj.i].join('/');
+    // workspace is optional; defaults to app.workspaceName
+    $scope.getKey = function(obj, workspace) {
+        return [$scope.app.appName, workspace ? workspace : $scope.app.workspaceName, obj.i].join('/');
     };
     
     // load notes from localStorage
-    $scope.loadNotes = function() {
+    $scope.openWorkspace = function() {
         var allKeys = Object.keys(localStorage);
         angular.forEach(allKeys, function(key, index) {
+            if (key == $scope.app.appName) return;  // ignore the app object
             var keyParts = key.split('/');
-            if (keyParts[0] != $scope.app.appName) return;
-            if (keyParts[1] != $scope.app.path) return;
-            if (keyParts[2][0] == 'N') {
-                var note = JSON.parse(localStorage[key]);
-                $scope.updateNote(note);
+            if (keyParts.length == 3) {
+                if (keyParts[0] != $scope.app.appName) return;
+                if (keyParts[1] != $scope.app.workspaceName) {  // not our workspace
+                    if (keyParts[2] == $scope.workspaceId) {    // workspace object?
+                        if ($scope.workspaces.indexOf(keyParts[1]) == -1) {
+                            $scope.workspaces.push(keyParts[1]);    // save name to workspace list
+                        }
+                    }
+                    return;
+                }
+                if (keyParts[2][0] == 'N') {    // "N12345" is a note
+                    var note = JSON.parse(localStorage[key]);
+                    $scope.updateNote(note);
+                    return;
+                }
+                else if (keyParts[2] == $scope.workspaceId) {   // "Workspace" is the workspace object
+                    angular.copy($scope.defaultWorkspace, $scope.workspace);
+                    angular.extend($scope.workspace, JSON.parse(localStorage[key]));
+                    return;
+                }
             }
-            else if (keyParts[2] == $scope.workspaceId) {
-                angular.copy($scope.defaultWorkspace, $scope.workspace);
-                angular.extend($scope.workspace, JSON.parse(localStorage[key]));
-            }
-            else {
-                alert('Unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
-                if ($scope.workspace.debug = 666) localStorage.removeItem(key);
-            }
+            alert('Unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
+            if ($scope.workspace.debug = 666) localStorage.removeItem(key);
         });
         $scope.setNotePrototypes();
+        $scope.workspaces.sort();
     };
-    $scope.loadNotes();
 
-    // save note to optional path
-    $scope.saveNote = function(note, path) {
-        var key = $scope.getKey(note, path);
+    // save note to optional workspace
+    $scope.saveNote = function(note, workspace) {
+        var key = $scope.getKey(note, workspace);
         try {
             localStorage.setItem(key, JSON.stringify(note));
         } catch(e) {
@@ -428,14 +480,14 @@ function WorkspaceController($scope, $timeout, $window) {
         localStorage.removeItem($scope.getKey(note));
         delete $scope.notes[note.i];
     };
-    
-    $scope.sendNote = function(note, path) {
-        if (!path) return;  // TODO: Validate path for newWorkspace
+/*    
+    $scope.sendNote = function(note, workspace) {
+        if (!workspace) return;  // TODO: Validate workspaceName for newWorkspace
         // todo: for multi-workspace, move the note in $scope.workspaces
-        $scope.saveNote(note, path);
+        $scope.saveNote(note, workspace);
         $scope.deleteNote(note);
     };
-    
+*/    
     $scope.deleteAllNotes = function() {
         if (!confirm('Really delete all notes?')) return;
         angular.forEach($scope.notes, function(note, index) {
@@ -479,7 +531,7 @@ function WorkspaceController($scope, $timeout, $window) {
         }
     };
 
-    $scope.workspaces = ['inbox', 'trash'];
+    $scope.workspaces = ['home', 'trash'];
     
     $scope.saveWorkspace = function() {
         $scope.saveNote($scope.workspace);        
@@ -817,7 +869,7 @@ function WorkspaceController($scope, $timeout, $window) {
         {s:1},        
         {t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
         {s:1},        
-        {t:'Wipe LocalStorage',             x:'wipeLocalStorage();hideMenu()'},
+        {t:'Wipe All Workspaces',           x:'wipeLocalStorage();hideMenu()'},
         {s:1},
         {t:'Toggle Debug',                  x:'setDebug(!workspace.debug);hideMenu()'}
     ];
@@ -920,6 +972,8 @@ function WorkspaceController($scope, $timeout, $window) {
     $scope.hideMenu = function() {
         $scope.menu = {};
     };
+
+    $scope.loadApp();
 };
 </script>
 </body>
