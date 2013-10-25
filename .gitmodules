@@ -1,0 +1,6 @@
+[submodule "js/angular-bootstrap-colorpicker"]
+	path = js/angular-bootstrap-colorpicker
+	url = https://github.com/buberdds/angular-bootstrap-colorpicker.git
+[submodule "js/ui-utils"]
+	path = js/ui-utils
+	url = https://github.com/angular-ui/ui-utils.git
