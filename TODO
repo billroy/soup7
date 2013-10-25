@@ -13,7 +13,8 @@ BUGS
 - bug: stale target highlighting after dragdrop (disabled for now)
 - bug: cursor pointer should be resize cursor during resize
 - bug: make title html-ok
-- bug: maybe edit should toTop()
+- bug: maybe edit should toTop()?
+    - maybe menu should toTop()?
 
 ========================================
 BASIC FEATURES
@@ -33,7 +34,6 @@ BASIC FEATURES
     - require it be empty first
 
 - trash
-    - deleteNote: sendNote(note, 'trash')
     - deleteNote in trash: really delete
         - extra prompt
     - Empty Trash
