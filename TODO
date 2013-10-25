@@ -19,7 +19,7 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- include the remaining dependencies in the package
+- :t as an array
 
 - dragdrop
     - drop note on note

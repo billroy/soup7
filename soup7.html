@@ -238,7 +238,8 @@ p {
                 ng-click='{{item.x}}'
                 ng-class='overclass'
                 ng-mouseenter='overclass="highlight"'
-                ng-mouseleave='overclass=""'>{{item.t}}
+                ng-mouseleave='overclass=""'>
+                <i class='{{item.i}}'></i> {{item.t}}
             </div>
             <div ng-show='item.s' class='rule'></div>
         </div>
@@ -252,7 +253,8 @@ p {
                 ng-click='{{item.x}}'
                 ng-class='overclass'
                 ng-mouseenter='overclass="highlight"'
-                ng-mouseleave='overclass=""'>{{item.t}}
+                ng-mouseleave='overclass=""'>
+                <i class='{{item.i}}'></i> {{item.t}}
             </div>
             <div ng-show='item.s' class='rule'></div>
         </div>
@@ -886,30 +888,30 @@ function WorkspaceController($scope, $timeout, $window) {
     };
 
     $scope.noteMenu = [
-        {t:'Edit Note Body',        x:'editText(menu.selectedNote);hideMenu()'},
-        {t:'Edit Note Title',       x:'editTitle(menu.selectedNote);hideMenu()'},
+        {i:'icon-pencil', t:'Edit Note Title',       x:'editTitle(menu.selectedNote);hideMenu()'},
+        {i:'icon-edit', t:'Edit Note Body',        x:'editText(menu.selectedNote);hideMenu()'},
         {s:1},
-        {t:'Set Text Color',        x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
-        {t:'Set Background Color',  x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Text Color',        x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Background Color',  x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
         {s:1},
-        {t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
+        {i:'icon-share', t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
         {s:1},
-        {t:'Delete Note',           x:'deleteNote(menu.selectedNote);hideMenu()'}
+        {i:'icon-trash', t:'Delete Note',           x:'deleteNote(menu.selectedNote);hideMenu()'}
     ];
     
     $scope.workspaceMenu = [
-        {t:'Add Workspace',                 x:'addWorkspace();hideMenu()'},
+        {i:'icon-plus-sign', t:'Add Workspace',                 x:'addWorkspace();hideMenu()'},
         {s:1},
-        {t:'Set Workspace Background',      x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Workspace Background',      x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
         {s:1},
-        {t:'Set Default Note Color',        x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
-        {t:'Set Default Note Background',   x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Default Note Text Color',   x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Default Note Background',   x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
         {s:1},
-        {t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
+        {i:'icon-trash', t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
         {s:1},
-        {t:'Wipe All Workspaces',           x:'wipeLocalStorage();hideMenu()'},
+        {i:'icon-warning-sign', t:'Wipe All Workspaces',           x:'wipeLocalStorage();hideMenu()'},
         {s:1},
-        {t:'Toggle Debug',                  x:'setDebug(!workspace.debug);hideMenu()'}
+        {i:'icon-eye-open', t:'Toggle Debug',                  x:'setDebug(!workspace.debug);hideMenu()'}
     ];
 
     $scope.menu = {};
