@@ -309,9 +309,7 @@ function WorkspaceController($scope, $timeout, $window) {
         if (app) {
             var appObj = JSON.parse(app);
             angular.extend($scope.app, appObj);
-console.log('loadApp:', appObj);
             $scope.selectedWorkspace = $scope.app.workspaceName;
-console.log('loadApp: set selected');
         }
         // todo: validate app.workspaceName
         // todo: verify home and trash exist; create if not
@@ -428,8 +426,8 @@ console.log('loadApp: set selected');
 
     // localStorage key for any object with a .i field
     // workspace is optional; defaults to app.workspaceName
-    $scope.getKey = function(obj, workspace) {
-        return [$scope.app.appName, workspace ? workspace : $scope.app.workspaceName, obj.i].join('/');
+    $scope.getKey = function(obj, workspaceName) {
+        return [$scope.app.appName, workspaceName ? workspaceName : $scope.app.workspaceName, obj.i].join('/');
     };
     
     // load notes from localStorage
@@ -456,6 +454,9 @@ console.log('loadApp: set selected');
                 else if (keyParts[2] == $scope.workspaceId) {   // "Workspace" is the workspace object
                     angular.copy($scope.defaultWorkspace, $scope.workspace);
                     angular.extend($scope.workspace, JSON.parse(localStorage[key]));
+                    if ($scope.workspaces.indexOf(keyParts[1]) == -1) {
+                        $scope.workspaces.push(keyParts[1]);    // save name to workspace list
+                    }
                     return;
                 }
             }
@@ -464,6 +465,29 @@ console.log('loadApp: set selected');
         });
         $scope.setNotePrototypes();
         $scope.workspaces.sort();
+    };
+
+    $scope.addWorkspace = function() {
+        var newName = prompt("New workspace name:", "");
+        if (!newName) return;
+        if (newName.indexOf('/') != -1) {
+            alert('Workspace name may not contain the "/" character');
+            return;
+        }
+        // does the workspace exist?  nav to it
+        var newWorkspace = {};
+        angular.extend(newWorkspace, $scope.defaultWorkspace);
+        var key = $scope.getKey(newWorkspace, newName);
+        if (!localStorage[key]) {
+            try {
+                localStorage.setItem(key, JSON.stringify(newWorkspace));
+            } catch(e) {
+                alert('ERROR: Could not add workspace!  Increase LocalStorage!');
+            }
+        }
+        $scope.selectedWorkspace = newName;
+        //$scope.saveApp();
+        //location.reload();
     };
 
     // save note to optional workspace
@@ -866,9 +890,11 @@ console.log('loadApp: set selected');
         {s:1},
         {t:'Set Default Note Color',        x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
         {t:'Set Default Note Background',   x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
-        {s:1},        
+        {s:1},
+        {t:'Add Workspace',                 x:'addWorkspace();hideMenu()'},
+        {s:1},
         {t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
-        {s:1},        
+        {s:1},
         {t:'Wipe All Workspaces',           x:'wipeLocalStorage();hideMenu()'},
         {s:1},
         {t:'Toggle Debug',                  x:'setDebug(!workspace.debug);hideMenu()'}
