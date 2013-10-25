@@ -11,6 +11,8 @@ LocalStorage is browser magic that allows modest databases to be stored locally 
 
 Because this is a server-free web application, you need only download and unpack the .zip file, and open the file soup7.html in your browser.
 
+Download: https://github.com/billroy/soup7/archive/master.zip
+
 Or navigate to a site online that hosts the code.
 
 ### About LocalStorage
