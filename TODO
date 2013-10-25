@@ -3,6 +3,8 @@ angular-notesoup todo
 ========================================
 BUGS
 
+- bug: menu position is wrong (too high) if screen is scrolled
+
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
         - need darker()/lighter()
@@ -26,13 +28,34 @@ BASIC FEATURES
     - app-wide id uniqueness
         - compute it at load time
     - Add Workspace command
-        - save a copy of the default? current? workspace settings
+        - make sure it isn't there already (go there?)
         - switch there
+            set $app.path, $workspace, $notes
+        - save a copy of the default? current? workspace settings
+
+    // todo: add notes:{} to defaultWorkspace
+    $scope.setWorkspace(newPath) {
+        if (!$scope.workspaces.HasOwnProperty(newPath)) {
+            var newWorkspace = {};
+            angular.extend(newWorkspace, $scope.defaultWorkspace)
+            $scope.workspaces[newPath] = {
+                workspace: newWorkspace;
+                notes: [];
+            };
+            $scope.saveNote(newWorkspace, newPath);
+        }
+        $scope.app.path = newPath;
+        $scope.workspace = $scope.workspaces[$scope.app.path].workspace;
+        $scope.notes = $scope.workspaces[$scope.app.path].notes;
+    };
+
     - load all workspaces at startup [name, notes, ...]
     - make the workspaceSelector work
         - set $scope.workspace
         - set $scope.notes
         - set $scope.app.path
+
+    - save application path so refresh doesn't send you back to home/inbox
 
     - sendNote: monkeypatch $scope
     - deleteNote: sendNote(note, 'trash')
