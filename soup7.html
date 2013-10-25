@@ -2,7 +2,7 @@
 <html>
 <!-- Copyright 2013 by Bill Roy.  Use under MIT License. -->
 <head>
-<title>{{app.appName}}</title>
+<title>Soup7</title>
 <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'></script>
 <script src='http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js'></script>
 <script src='http://code.angularjs.org/1.1.5/angular.min.js'></script>
@@ -34,19 +34,20 @@ body {
     float: left;
     margin: 12px 0 0 0.5em;
 }
+.workspaceSelector {
+    float: left;
+    width: 144px;
+    font-size: 0.9em;
+    margin: .5em 1em 0 1em;
+    border-radius: 6px;
+}
 .textInput {
     background: white;
     width: 512px;
     color: blue;
     float: left;
     margin: 6px 0 0 6px;
-    height: 24px;
-}
-.workspaceSelector {
-    float: left;
-    width: 96px;
-    height: 18px;
-    margin: 1em 1em 0 1em;
+    border-radius: 6px;
 }
 .note {
     position: absolute;
@@ -886,12 +887,12 @@ function WorkspaceController($scope, $timeout, $window) {
     ];
     
     $scope.workspaceMenu = [
+        {t:'Add Workspace',                 x:'addWorkspace();hideMenu()'},
+        {s:1},
         {t:'Set Workspace Background',      x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
         {s:1},
         {t:'Set Default Note Color',        x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
         {t:'Set Default Note Background',   x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
-        {s:1},
-        {t:'Add Workspace',                 x:'addWorkspace();hideMenu()'},
         {s:1},
         {t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
         {s:1},

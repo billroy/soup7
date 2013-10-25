@@ -24,74 +24,25 @@ BASIC FEATURES
 
 - use $scope.eval in .commands
 
-- workspace selector
-
-- bug: selector comes up as home each time
-
+- Send To >: move notes between workspaces
+    - workspace dropdown
     - app-wide id uniqueness
         - compute it at load time
-    - ensure home and trash exist at startup
-        - create them if they're not there
 
-    - Add Workspace command
-        - make sure it isn't there already (go there?)
-        - switch there
-            set $app.path, $workspace, $notes
-        - save a copy of the default? current? workspace settings
+- ensure home and trash exist at startup
+    - create them if they're not there
 
-- approach to multiple workspaces:
-    - workspaces is just an array of names used to populate the selector
-    - populated at load time as the other workspaces go by
-        - ensure home and trash are valid and create them if not
-    - load app data at startup
-        
-        - current path is preserved
-        - defaultApp
-    - workspace selector is aimed at app.path; on change:
-        - validate new path
-        - save app data
-        - reload the page
-    - watcher on app.path calls openWorkspace
+- delete workspace
+    - require it be empty first
 
-    $scope.$watch('app.path', function(newValue, oldValue) {
-    });
-    $scope.openWorkspace = function() {
-        $scope.workspace = $scope.workspaces[$scope.app.path].workspace;
-        $scope.notes = $scope.workspaces[$scope.app.path].notes;
-    };
+- deleteNote: sendNote(note, 'trash')
+    - deleteNote in trash: really delete
+        - extra prompt
 
-    // todo: add notes:{} to defaultWorkspace
-    $scope.setWorkspace(newPath) {
-        if (!$scope.workspaces.HasOwnProperty(newPath)) {
-            var newWorkspace = {};
-            angular.extend(newWorkspace, $scope.defaultWorkspace)
-            $scope.workspaces[newPath] = {
-                workspace: newWorkspace;
-                notes: [];
-            };
-            $scope.saveNote(newWorkspace, newPath);
-        }
-        $scope.app.path = newPath;
-        $scope.workspace = $scope.workspaces[$scope.app.path].workspace;
-        $scope.notes = $scope.workspaces[$scope.app.path].notes;
-    };
+- Empty Trash
 
-    - load all workspaces at startup [name, notes, ...]
-    - make the workspaceSelector work
-        - set $scope.workspace
-        - set $scope.notes
-        - set $scope.app.path
-
-    - save application path so refresh doesn't send you back to home/inbox
-
-    - sendNote: monkeypatch $scope
-    - deleteNote: sendNote(note, 'trash')
-        - deleteNote in trash: really delete
-            - extra prompt
-    - Send To >: move notes between workspaces
-        - workspace dropdown
-    - Clone Workspace To...: copy notes and workspace settings
-        - validate pathname carefully
+- Clone Workspace To...: copy notes and workspace settings
+    - validate pathname carefully
 
 - animations
     - workspace open/close
