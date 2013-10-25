@@ -18,6 +18,13 @@ BUGS
 ========================================
 BASIC FEATURES
 
+https://github.com/angular-ui/ui-utils.git
+https://github.com/buberdds/angular-bootstrap-colorpicker.git
+git submodule init
+git submodule update
+I don't think so.
+nuke their gitness and try again?
+
 - dragdrop
     - drop note on note
         - bug: stale target highlighting after dragdrop (disabled for now)
