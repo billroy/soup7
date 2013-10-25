@@ -20,18 +20,11 @@ BASIC FEATURES
 
 - include the remaining dependencies in the package
 
-- push to heroku
-
 - dragdrop
     - drop note on note
         - bug: stale target highlighting after dragdrop (disabled for now)
 
 - use $scope.eval in .commands
-
-- Send To >: move notes between workspaces
-    - workspace dropdown
-    - app-wide id uniqueness
-        - compute it at load time
 
 - ensure home and trash exist at startup
     - create them if they're not there
@@ -39,11 +32,16 @@ BASIC FEATURES
 - delete workspace
     - require it be empty first
 
-- deleteNote: sendNote(note, 'trash')
+- trash
+    - deleteNote: sendNote(note, 'trash')
     - deleteNote in trash: really delete
         - extra prompt
+    - Empty Trash
 
-- Empty Trash
+- Send To >: move notes between workspaces
+    - workspace dropdown
+    - app-wide id uniqueness
+        - compute it at load time
 
 - Clone Workspace To...: copy notes and workspace settings
     - validate pathname carefully

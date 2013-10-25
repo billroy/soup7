@@ -501,19 +501,30 @@ function WorkspaceController($scope, $timeout, $window) {
         }
     };
 
-    $scope.deleteNote = function(note) {
+    $scope.deleteNote = function(note) {    // move note to trash
+        if ($scope.app.path == 'trash') {
+            if (!confirm('Delete this note from the trash?')) return;
+            $scope.removeNote(note);
+        }
+        $scope.sendNote(note, 'trash');
+    };
+
+    $scope.removeNote = function(note) {
         localStorage.removeItem($scope.getKey(note));
         delete $scope.notes[note.i];
     };
-/*    
+
     $scope.sendNote = function(note, workspace) {
         if (!workspace) return;  // TODO: Validate workspaceName for newWorkspace
-        // todo: for multi-workspace, move the note in $scope.workspaces
         $scope.saveNote(note, workspace);
-        $scope.deleteNote(note);
+        $scope.removeNote(note);
     };
-*/    
+    
+    $scope.emptyTrash = function() {
+    };
+
     $scope.deleteAllNotes = function() {
+        if ($scope.app.path == 'trash') return $scope.emptyTrash();
         if (!confirm('Really delete all notes?')) return;
         angular.forEach($scope.notes, function(note, index) {
             $scope.deleteNote(note);
