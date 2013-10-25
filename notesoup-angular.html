@@ -17,7 +17,7 @@ body {
     background-color: black;
     padding-left: 0px;
 }
-.notebook {
+.workspace {
     width: 2048px;
     height:2048px;
 }
@@ -131,10 +131,10 @@ p {
 </head>
 <body ng-app='NoteSoup'>
 
-<div ng-controller='NotebookController' class='notebook'
-    droppable='true'
+<div ng-controller='WorkspaceController' class='workspace'
     ng-style='workspaceStyle()'
     ng-right-click='showWorkspaceMenu(workspace, $event)'
+    droppable='true'
     ui-event='{
         dragstart:"dragstart($event)", 
         drag:"dragging($event)",
@@ -292,7 +292,7 @@ app.directive('ngRightClick', function($parse) {
     };
 });
 
-function NotebookController($scope, $timeout, $window) {
+function WorkspaceController($scope, $timeout, $window) {
 
     $scope.setDebug = function(value) {
         $scope.workspace.debug = value;
@@ -872,25 +872,26 @@ function NotebookController($scope, $timeout, $window) {
     };
 
     $scope.setNoteColor = function(attr, note, event) {
-        $scope.setObjectColor(attr, note, event, function(note) {
+        $scope.setObjectColor(attr, note, event, 
+                (note[attr] || workspace.defaultNote[attr]), function(note) {
             $scope.saveNote(note);
         });
     };
 
     $scope.setWorkspaceColor = function(attr, obj, event) {
-        $scope.setObjectColor(attr, obj, event, function(workspace) {
+        $scope.setObjectColor(attr, obj, event, obj[attr], function(workspace) {
             $scope.saveWorkspace();
         });
     };
 
     $scope.setDefaultNoteColor = function(attr, note, event) {
-        $scope.setObjectColor(attr, note, event, function(note) {
+        $scope.setObjectColor(attr, note, event, note[attr], function(note) {
             $scope.saveWorkspace();
         });
     };
     
-    $scope.setObjectColor = function(attr, obj, event, callback) {
-        $scope.pickedColor = obj[attr];
+    $scope.setObjectColor = function(attr, obj, event, initialColor, callback) {
+        $scope.pickedColor = initialColor;
         $scope.showColorPicker(event);
 
         // watch pickedColor and update note[attr]

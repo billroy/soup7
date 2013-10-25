@@ -49,11 +49,11 @@ BASIC FEATURES
     - note deletion fade-out
 
 - templates
-    - stock widgets
-        - clock
-        - calendar
-        - clickable color palette
-            - dropdown for target
+- calendar background
+- stock widgets
+    - clock
+    - clickable color palette
+        - dropdown for target
 
 - note widget
     - append-text input
@@ -72,7 +72,6 @@ BASIC FEATURES
     save each note (ouch)
 
 - workspace:set grid
-- templates
 - feature: cancel color picker change
 
 - object attribute editor
