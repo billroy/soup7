@@ -1,4 +1,4 @@
-angular-notesoup todo
+Soup7 TODO
 
 ========================================
 BUGS
@@ -18,10 +18,15 @@ BUGS
 ========================================
 BASIC FEATURES
 
+- Send To >: move notes between workspaces
+    - workspaces menu
+    - app-wide id uniqueness (app.lastNoteId)
+
+- BUG: saveNote(...,to): verify destination doesn't already exist
+
 - touch event support: http://www.html5rocks.com/en/mobile/touch/
 
-- subnotes
-    - :t as an array
+- subnotes (.s[]? and .p?)
 
 - position menus with ng-style to eliminate .css call
 
@@ -31,24 +36,16 @@ BASIC FEATURES
 
 - use $scope.eval in .commands
 
-- ensure home and trash exist at startup
+- ensure home and trash exist at startup?
     - create them if they're not there
 
 - delete workspace
     - require it be empty first
-
-- trash
-    - deleteNote in trash: really delete
-        - extra prompt
-    - Empty Trash
-
-- Send To >: move notes between workspaces
-    - workspace dropdown
-    - app-wide id uniqueness
-        - compute it at load time
+    - disallow delete of trash, home?
 
 - Clone Workspace To...: copy notes and workspace settings
     - validate pathname carefully
+    - stay here or go there?
 
 - animations
     - workspace open/close
