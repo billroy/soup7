@@ -202,7 +202,8 @@ p {
             </div>
             <div class='notetitle' style='float:none'
                 ng-dblclick='editTitle(note)'
-                ng-hide='note._editingTitle'>{{note.n}}
+                ng-hide='note._editingTitle'
+                ng-bind-html-unsafe='note.n'>
             </div>
             <span ng-show='note._editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
@@ -470,8 +471,8 @@ function WorkspaceController($scope, $timeout, $window) {
         $scope.workspaces.sort();
     };
 
-    $scope.addWorkspace = function() {
-        var newName = prompt("New workspace name:", "");
+    $scope.addWorkspace = function(newName) {
+        if (!newName) newName = prompt("New workspace name:", "");
         if (!newName) return;
         if (newName.indexOf('/') != -1) {
             alert('Workspace name may not contain the "/" character');
@@ -489,8 +490,8 @@ function WorkspaceController($scope, $timeout, $window) {
             }
         }
         $scope.selectedWorkspace = newName;
-        //$scope.saveApp();
-        //location.reload();
+        $scope.saveApp();
+        location.reload();
     };
 
     // save note to optional workspace

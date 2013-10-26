@@ -3,6 +3,7 @@ angular-notesoup todo
 ========================================
 BUGS
 
+- bug: double spacing paragraphs doesn't work
 - bug: menu position is wrong (too high) if screen is scrolled
 
 - bug: c:'white' causes body text to disappear
@@ -14,12 +15,16 @@ BUGS
 - bug: cursor pointer should be resize cursor during resize
 - bug: make title html-ok
 - bug: maybe edit should toTop()?
-    - maybe menu should toTop()?
 
 ========================================
 BASIC FEATURES
 
-- :t as an array
+- touch event support: http://www.html5rocks.com/en/mobile/touch/
+
+- subnotes
+    - :t as an array
+
+- position menus with ng-style to eliminate .css call
 
 - dragdrop
     - drop note on note
