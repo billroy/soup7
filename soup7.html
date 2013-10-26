@@ -219,7 +219,8 @@ p {
             ng-mouseover='mouseover(note, $event)'
             ng-mouseleave='mouseleave(note, $event)'
             ng-dblclick='editText(note)'>
-            <div ng-show='note.d&&!note._editingText' ng-bind-html-unsafe='renderBody(note)'></div>
+            <div ng-show='note.d&&!note._editingText' 
+                ng-bind-html-unsafe='renderBody(note)'></div>
             <div ng-show='note.d&&note._editingText'>
                 <textarea name='noteBody' ng-style='{width:"95%"}'
                     ng-model='note.t'></textarea>
@@ -505,7 +506,7 @@ function WorkspaceController($scope, $timeout, $window) {
     };
 
     $scope.deleteNote = function(note) {    // move note to trash
-        if ($scope.app.path == 'trash') {
+        if ($scope.app.workspaceName == 'trash') {
             if (!confirm('Delete this note from the trash?')) return;
             $scope.removeNote(note);
         }
@@ -522,13 +523,26 @@ function WorkspaceController($scope, $timeout, $window) {
         $scope.saveNote(note, workspace);
         $scope.removeNote(note);
     };
-    
+
     $scope.emptyTrash = function() {
+        if (!confirm('Empty the Trash?')) return;
+        var allKeys = Object.keys(localStorage);
+        angular.forEach(allKeys, function(key, index) {
+            if (key == $scope.app.appName) return;  // ignore the app object
+            var keyParts = key.split('/');
+            if (keyParts.length != 3) return;
+            if (keyParts[0] != $scope.app.appName) return;  // not our app
+            if (keyParts[1] != 'trash') return;             // not our workspace
+            if (keyParts[2][0] == 'N') {    // "N12345" is a note
+                localStorage.removeItem(key);
+            }
+        });
+        if ($scope.app.workspaceName == 'trash') location.reload();
     };
 
     $scope.deleteAllNotes = function() {
-        if ($scope.app.path == 'trash') return $scope.emptyTrash();
-        if (!confirm('Really delete all notes?')) return;
+        if ($scope.app.workspaceName == 'trash') return $scope.emptyTrash();
+        if (!confirm('Send everything here to the Trash?')) return;
         angular.forEach($scope.notes, function(note, index) {
             $scope.deleteNote(note);
         });
@@ -889,30 +903,31 @@ function WorkspaceController($scope, $timeout, $window) {
     };
 
     $scope.noteMenu = [
-        {i:'icon-pencil', t:'Edit Note Title',       x:'editTitle(menu.selectedNote);hideMenu()'},
-        {i:'icon-edit', t:'Edit Note Body',        x:'editText(menu.selectedNote);hideMenu()'},
+        {i:'icon-pencil', t:'Edit Note Title',      x:'editTitle(menu.selectedNote);hideMenu()'},
+        {i:'icon-edit', t:'Edit Note Body',         x:'editText(menu.selectedNote);hideMenu()'},
         {s:1},
-        {i:'icon-star', t:'Set Text Color',        x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
-        {i:'icon-star', t:'Set Background Color',  x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Text Color',         x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Background Color',   x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
         {s:1},
         {i:'icon-share', t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
         {s:1},
-        {i:'icon-trash', t:'Delete Note',           x:'deleteNote(menu.selectedNote);hideMenu()'}
+        {i:'icon-trash', t:'Send to Trash',         x:'deleteNote(menu.selectedNote);hideMenu()'}
     ];
     
     $scope.workspaceMenu = [
-        {i:'icon-plus-sign', t:'Add Workspace',                 x:'addWorkspace();hideMenu()'},
+        {i:'icon-plus-sign', t:'Add Workspace',             x:'addWorkspace();hideMenu()'},
         {s:1},
-        {i:'icon-star', t:'Set Workspace Background',      x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Workspace Background',       x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
         {s:1},
-        {i:'icon-star', t:'Set Default Note Text Color',   x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
-        {i:'icon-star', t:'Set Default Note Background',   x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Default Note Text Color',    x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
+        {i:'icon-star', t:'Set Default Note Background',    x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
         {s:1},
         {i:'icon-trash', t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
+        {i:'icon-trash', t:'Empty Trash',                   x:'emptyTrash();hideMenu()'},
         {s:1},
-        {i:'icon-warning-sign', t:'Wipe All Workspaces',           x:'wipeLocalStorage();hideMenu()'},
+        {i:'icon-warning-sign', t:'Wipe All Workspaces',    x:'wipeLocalStorage();hideMenu()'},
         {s:1},
-        {i:'icon-eye-open', t:'Toggle Debug',                  x:'setDebug(!workspace.debug);hideMenu()'}
+        {i:'icon-eye-open', t:'Toggle Debug',               x:'setDebug(!workspace.debug);hideMenu()'}
     ];
 
     $scope.menu = {};

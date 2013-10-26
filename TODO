@@ -13,7 +13,6 @@ BUGS
 - bug: Enter should end title edit
 - bug: stale target highlighting after dragdrop (disabled for now)
 - bug: cursor pointer should be resize cursor during resize
-- bug: make title html-ok
 - bug: maybe edit should toTop()?
 
 ========================================
@@ -90,3 +89,8 @@ BASIC FEATURES
 - mailto
 - export
 - sync
+
+- sharing ideas
+    - pubserver via socket.io: http://stackoverflow.com/questions/8970880/cross-domain-socket-io
+    - live workspace sharing via socket.io (connection brokering, message routing)
+
