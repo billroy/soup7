@@ -19,10 +19,16 @@ BUGS
 BASIC FEATURES
 
 - Send To >: move notes between workspaces
-    - workspaces menu
-    - app-wide id uniqueness (app.lastNoteId)
+    - TODO: app-wide id uniqueness (app.lastNoteId)
+    - bug: sendToMenu disappears when you mouse into it
 
 - BUG: saveNote(...,to): verify destination doesn't already exist
+
+- delete workspace
+    - require it be empty first
+    - disallow delete of done, todo, trash?
+
+- listview
 
 - touch event support: http://www.html5rocks.com/en/mobile/touch/
 
@@ -38,10 +44,6 @@ BASIC FEATURES
 
 - ensure home and trash exist at startup?
     - create them if they're not there
-
-- delete workspace
-    - require it be empty first
-    - disallow delete of trash, home?
 
 - Clone Workspace To...: copy notes and workspace settings
     - validate pathname carefully

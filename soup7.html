@@ -232,21 +232,6 @@ p {
         </div>
     </div>
 
-    <div class='menu' id='noteMenu' 
-        ng-show='menu.showingNoteMenu'
-        ng-mouseleave='hideMenu()'>
-        <div ng-repeat='item in noteMenu'>
-            <div ng-hide='item.s'
-                ng-click='{{item.x}}'
-                ng-class='overclass'
-                ng-mouseenter='overclass="highlight"'
-                ng-mouseleave='overclass=""'>
-                <i class='{{item.i}}'></i> {{item.t}}
-            </div>
-            <div ng-show='item.s' class='rule'></div>
-        </div>
-    </div>
-
     <div class='menu' id='workspaceMenu'
         ng-show='menu.showingWorkspaceMenu'
         ng-mouseleave='hideMenu()'>
@@ -259,6 +244,35 @@ p {
                 <i class='{{item.i}}'></i> {{item.t}}
             </div>
             <div ng-show='item.s' class='rule'></div>
+        </div>
+    </div>
+
+    <div class='menu' id='noteMenu' 
+        ng-show='menu.showingNoteMenu'
+        ng-mouseleave='menu.showingSendToMenu ? 0 : hideMenu()'>
+        <div ng-repeat='item in noteMenu'>
+            <div ng-hide='item.s'
+                ng-click='{{item.x}}'
+                ng-class='overclass'
+                ng-mouseenter='overclass="highlight"'
+                ng-mouseleave='overclass=""'>
+                <i class='{{item.i}}'></i> {{item.t}}
+            </div>
+            <div ng-show='item.s' class='rule'></div>
+        </div>
+    </div>
+
+    <div class='menu' id='sendToMenu'
+        ng-show='menu.showingSendToMenu'
+        ng-mouseleave='hideMenu()'>
+        <div ng-repeat='item in workspaces'>
+            <div ng-click='sendNote(menu.selectedNote,item);hideMenu()'
+                ng-class='overclass'
+                ng-disabled='item==app.workspaceName'
+                ng-mouseenter='overclass="highlight"'
+                ng-mouseleave='overclass=""'>
+                <i class=' icon-folder-close'></i> {{item}}
+            </div>
         </div>
     </div>
 
@@ -520,6 +534,7 @@ function WorkspaceController($scope, $timeout, $window) {
 
     $scope.sendNote = function(note, workspace) {
         if (!workspace) return;  // TODO: Validate workspaceName for newWorkspace
+        if (workspace == $scope.app.workspaceName) return;    // prevent send-to-self
         $scope.saveNote(note, workspace);
         $scope.removeNote(note);
     };
@@ -911,7 +926,9 @@ function WorkspaceController($scope, $timeout, $window) {
         {s:1},
         {i:'icon-share', t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
         {s:1},
-        {i:'icon-ok', t:'Send to Done',             x:'sendNote(menu.selectedNote,"done");hideMenu()'},
+        {i:'icon-ok', t:'Send To Done',             x:'sendNote(menu.selectedNote,"done");hideMenu()'},
+        {i:'icon-arrow-right', t:'Send To...', m:1, x:'showSendToMenu($event)'},    // m for submenu
+        {s:1},
         {i:'icon-trash', t:'Send to Trash',         x:'deleteNote(menu.selectedNote);hideMenu()'}
     ];
     
@@ -960,6 +977,20 @@ function WorkspaceController($scope, $timeout, $window) {
 
         // TODO: position the menu with an ng-style so this isn't needed
         angular.element('#workspaceMenu').css({
+            left: $scope.menu.x,
+            top: $scope.menu.y
+        });
+    };
+
+    $scope.showSendToMenu = function(event) {
+        angular.extend($scope.menu, {
+            showingSendToMenu: true,
+            x: event.clientX,
+            y:event.clientY
+        });
+
+        // TODO: position the menu with an ng-style so this isn't needed
+        angular.element('#sendToMenu').css({
             left: $scope.menu.x,
             top: $scope.menu.y
         });
