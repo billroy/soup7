@@ -129,7 +129,7 @@ p {
     z-index: 15000;
 }
 .debug {
-    margin: 3em 0 0 0;
+    margin: 3em 0 0 1em;
 }
 </style>
 </head>
@@ -596,8 +596,8 @@ function WorkspaceController($scope, $timeout, $window) {
             d: 1,
             n: title,
             t: text,
-            x: Math.floor(Math.random() * 1024),
-            y: 48 + Math.floor(Math.random() * 1024),
+            x: Math.floor(Math.random() * 512),
+            y: 48 + Math.floor(Math.random() * 512),
             z: $scope.topZ() + 1
         });
         $scope.updateNote(newNote);

@@ -4,8 +4,6 @@ Soup7 TODO
 BUGS
 
 - bug: double spacing paragraphs doesn't work
-- bug: menu position is wrong (too high) if screen is scrolled
-
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
         - need darker()/lighter()
@@ -35,6 +33,8 @@ BASIC FEATURES
 - listview
 
 - position menus with ng-style to eliminate .css call
+
+- Close All
 
 - animations
     - workspace open/close
