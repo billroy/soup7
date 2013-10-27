@@ -323,7 +323,7 @@ function WorkspaceController($scope, $timeout, $window) {
         workspaceName: 'todo',
         lastNoteId: 0
     };
-    
+
     $scope.loadApp = function() {
         var app = localStorage[$scope.app.appName];
         if (app) {
@@ -539,7 +539,7 @@ function WorkspaceController($scope, $timeout, $window) {
     };
 
     $scope.emptyTrash = function() {
-        if (!confirm('Empty the Trash?')) return;
+        if (!confirm('Empty the Trash?')) return false;
         var allKeys = Object.keys(localStorage);
         angular.forEach(allKeys, function(key, index) {
             if (key == $scope.app.appName) return;  // ignore the app object
@@ -552,14 +552,25 @@ function WorkspaceController($scope, $timeout, $window) {
             }
         });
         if ($scope.app.workspaceName == 'trash') location.reload();
+        return true;
     };
 
     $scope.deleteAllNotes = function() {
         if ($scope.app.workspaceName == 'trash') return $scope.emptyTrash();
-        if (!confirm('Send everything here to the Trash?')) return;
+        if (!confirm('Send everything here to the Trash?')) return false;
         angular.forEach($scope.notes, function(note, index) {
             $scope.deleteNote(note);
         });
+        return true;
+    };
+
+    $scope.deleteWorkspace = function() {
+        if (!$scope.deleteAllNotes()) return false;
+        if (!confirm('Delete this workspace?')) return false;
+        localStorage.removeItem($scope.getKey($scope.workspace));
+        $scope.app.workspaceName = 'todo';
+        $scope.saveApp();
+        location.reload();
     };
 
     $scope.wipeLocalStorage = function() {
@@ -939,9 +950,11 @@ function WorkspaceController($scope, $timeout, $window) {
         {i:'icon-star', t:'Set Default Note Background',    x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
         {s:1},
         {i:'icon-trash', t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
-        {i:'icon-trash', t:'Empty Trash',                   x:'emptyTrash();hideMenu()'},
+        {i:'icon-trash', t:'Delete This Workspace',         x:'deleteWorkspace();hideMenu()'},
         {s:1},
         {i:'icon-warning-sign', t:'Wipe All Workspaces',    x:'wipeLocalStorage();hideMenu()'},
+        {s:1},
+        {i:'icon-trash', t:'Empty Trash',                   x:'emptyTrash();hideMenu()'},
         {s:1},
         {i:'icon-eye-open', t:'Toggle Debug',               x:'setDebug(!workspace.debug);hideMenu()'}
     ];

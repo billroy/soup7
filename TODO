@@ -18,36 +18,28 @@ BUGS
 ========================================
 BASIC FEATURES
 
-- Send To >: move notes between workspaces
-    - TODO: app-wide id uniqueness (app.lastNoteId)
-    - bug: sendToMenu disappears when you mouse into it
-
 - BUG: saveNote(...,to): verify destination doesn't already exist
 
 - delete workspace
     - require it be empty first
     - disallow delete of done, todo, trash?
 
-- listview
-
-- touch event support: http://www.html5rocks.com/en/mobile/touch/
-
-- subnotes (.s[]? and .p?)
-
-- position menus with ng-style to eliminate .css call
-
 - dragdrop
     - drop note on note
-        - bug: stale target highlighting after dragdrop (disabled for now)
-
-- use $scope.eval in .commands
-
-- ensure home and trash exist at startup?
-    - create them if they're not there
+        - subnotes (.s[]? and .p?)
+    - bug: stale target highlighting after dragdrop (disabled for now)
 
 - Clone Workspace To...: copy notes and workspace settings
     - validate pathname carefully
     - stay here or go there?
+
+- pin commandBar to top of screen
+
+- listview
+
+- touch event support: http://www.html5rocks.com/en/mobile/touch/
+
+- position menus with ng-style to eliminate .css call
 
 - animations
     - workspace open/close
