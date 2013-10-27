@@ -741,8 +741,6 @@ function WorkspaceController($scope, $timeout, $window) {
 			}
             dragNote.x = Math.max(0, $scope.drag.startingX + dx);
 			dragNote.y = Math.max(0, $scope.drag.startingY + dy);
-            //$scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.x + $window.pageXOffset;
-            //$scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.y + $window.pageYOffset;
         }
     };
 
@@ -758,8 +756,6 @@ function WorkspaceController($scope, $timeout, $window) {
             $scope.drag = {};
         }
         else if (!id.match(/^note_/)) {  // drop on workspace
-            //$scope.notes[$scope.drag.noteId].x = e.x - $scope.drag.x + $window.pageXOffset;
-            //$scope.notes[$scope.drag.noteId].y = e.y - $scope.drag.y + $window.pageYOffset;
             $scope.saveNote($scope.notes[$scope.drag.noteId]);
             $scope.drag = {};
         }
@@ -787,9 +783,9 @@ function WorkspaceController($scope, $timeout, $window) {
 
     // randomize new note position so notes are less likely 
     // to collide between sessions
-    $scope.nextX = 24 + 24 * Math.floor(Math.random()*6);
-    $scope.nextY = 48 + 24 * Math.floor(Math.random()*6);
-    $scope.nextIncrement = 24;
+    $scope.nextIncrement = $scope.workspace.grid || 24;
+    $scope.nextX = $scope.nextIncrement + $scope.nextIncrement * Math.floor(Math.random() * 8);
+    $scope.nextY = 2 * $scope.nextIncrement + $scope.nextIncrement * Math.floor(Math.random() * 8);
     $scope.nextXPos = function() {
         $scope.nextX += $scope.nextIncrement;
         return $scope.nextX;
@@ -904,8 +900,8 @@ function WorkspaceController($scope, $timeout, $window) {
         angular.extend(newNote, note);
         angular.extend(newNote, {
             i: $scope.newNoteId(),
-            x: newNote.x + 24,
-            y: newNote.y + 24
+            x: newNote.x + $scope.workspace.grid,
+            y: newNote.y + $scope.workspace.grid
         });
         $scope.updateNote(newNote);
         $scope.saveNote(newNote);
