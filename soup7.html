@@ -604,8 +604,8 @@ function WorkspaceController($scope, $timeout, $window) {
         $scope.saveNote($scope.notes[newNote.i]);
     };
 
-    $scope.forceStorageOverflow = function() {
-        var max = 1000;
+    $scope.makeNotes = function(max) {
+        var max = max || 100;
         var t0 = new Date().getTime();
         for (var i=0; i < max; i++) {
             var elapsed = new Date().getTime() - t0;
@@ -939,10 +939,10 @@ function WorkspaceController($scope, $timeout, $window) {
         {s:1},
         {i:'icon-share', t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
         {s:1},
-        {i:'icon-ok', t:'Send To Done',             x:'sendNote(menu.selectedNote,"done");hideMenu()'},
-        {i:'icon-arrow-right', t:'Send To...', m:1, x:'showSendToMenu($event)'},    // m for submenu
+        {i:'icon-ok', t:'Move to Done',             x:'sendNote(menu.selectedNote,"done");hideMenu()'},
+        {i:'icon-arrow-right', t:'Move To...', m:1, x:'showSendToMenu($event)'},    // m for submenu
         {s:1},
-        {i:'icon-trash', t:'Send to Trash',         x:'deleteNote(menu.selectedNote);hideMenu()'}
+        {i:'icon-trash', t:'Move to Trash',         x:'deleteNote(menu.selectedNote);hideMenu()'}
     ];
     
     $scope.workspaceMenu = [
@@ -971,8 +971,8 @@ function WorkspaceController($scope, $timeout, $window) {
         angular.extend($scope.menu, {
             selectedNote: note,
             showingNoteMenu: true,
-            x: event.clientX,
-            y:event.clientY
+            x: event.clientX + $window.pageXOffset,
+            y: event.clientY + $window.pageYOffset
         });
 
         // TODO: position the menu with an ng-style so this isn't needed
@@ -986,8 +986,8 @@ function WorkspaceController($scope, $timeout, $window) {
         angular.extend($scope.menu, {
             workspace: workspace,
             showingWorkspaceMenu: true,
-            x: event.clientX,
-            y:event.clientY
+            x: event.clientX + $window.pageXOffset,
+            y: event.clientY + $window.pageYOffset
         });
 
         // TODO: position the menu with an ng-style so this isn't needed
@@ -1000,8 +1000,8 @@ function WorkspaceController($scope, $timeout, $window) {
     $scope.showSendToMenu = function(event) {
         angular.extend($scope.menu, {
             showingSendToMenu: true,
-            x: event.clientX,
-            y:event.clientY
+            x: event.clientX + $window.pageXOffset,
+            y: event.clientY + $window.pageYOffset
         });
 
         // TODO: position the menu with an ng-style so this isn't needed
