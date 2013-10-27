@@ -14,15 +14,11 @@ BUGS
 - bug: stale target highlighting after dragdrop (disabled for now)
 - bug: cursor pointer should be resize cursor during resize
 - bug: maybe edit should toTop()?
+- chore: saveNote(...,to): verify destination doesn't already exist
 
 ========================================
 BASIC FEATURES
 
-- BUG: saveNote(...,to): verify destination doesn't already exist
-
-- delete workspace
-    - require it be empty first
-    - disallow delete of done, todo, trash?
 
 - dragdrop
     - drop note on note

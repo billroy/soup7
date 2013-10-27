@@ -22,12 +22,14 @@ body {
     height:2048px;
 }
 .commandBar {
+    position: absolute;
     background: black;
     color: white;
     height: 42px;
     border: 1px solid lightgray;
     border-radius: 6px;
     margin: 0 0 0 0;
+    z-index: 10000;
 }
 .logo {
     font-size: 1.2em;
@@ -43,9 +45,9 @@ body {
 }
 .textInput {
     background: white;
-    width: 512px;
     color: blue;
     float: left;
+    width: 50%;
     margin: 6px 0 0 6px;
     border-radius: 6px;
 }
@@ -126,6 +128,9 @@ p {
     position: absolute;
     z-index: 15000;
 }
+.debug {
+    margin: 3em 0 0 0;
+}
 </style>
 </head>
 <body ng-app='Soup7'>
@@ -144,7 +149,7 @@ p {
         dragend:"dragend($event)"
     }'>
 
-    <div class='commandBar'>
+    <div class='commandBar' ng-style='commandBarStyle()'>
         <div class='logo'>&bull;&nbsp;Soup7</div>
         <select class='workspaceSelector' name='workspace' 
             ng-model='selectedWorkspace'
@@ -156,7 +161,7 @@ p {
         </form>
     </div>
 
-    <div ng-show='workspace.debug'>
+    <div ng-show='workspace.debug' class='debug'>
         <div>Debug info:</div>
         <div>App: {{app}}</div>
         <div>workspaceName: {{selectedWorkspace}}</div>
@@ -922,6 +927,9 @@ function WorkspaceController($scope, $timeout, $window) {
         return '<p>' + lines.join('</p>\n<p>') + '</p>';    // else htmlify body
     };
 
+    //
+    //  menus
+    //
     $scope.noteMenu = [
         {i:'icon-pencil', t:'Edit Note Title',      x:'editTitle(menu.selectedNote);hideMenu()'},
         {i:'icon-edit', t:'Edit Note Body',         x:'editText(menu.selectedNote);hideMenu()'},
@@ -1067,6 +1075,24 @@ function WorkspaceController($scope, $timeout, $window) {
     $scope.hideMenu = function() {
         $scope.menu = {};
     };
+
+    //
+    //  command bar
+    //
+    $scope.commandBar = {left: 0, top: 0, width: $window.outerWidth};
+    $scope.commandBarStyle = function() { return $scope.commandBar; }
+    $scope.setupCommandBarFollowing = function() {
+        angular.element($window).bind('scroll', function() {
+            $scope.commandBar.left = $window.pageXOffset;
+            $scope.commandBar.top = $window.pageYOffset;
+            $scope.$apply();
+        });
+        angular.element($window).bind('resize', function() {
+            $scope.commandBar.width = $window.outerWidth;
+            $scope.$apply();
+        });
+    };
+    $scope.setupCommandBarFollowing();
 
     $scope.loadApp();
 };
