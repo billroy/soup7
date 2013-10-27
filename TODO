@@ -27,58 +27,48 @@ BASIC FEATURES
     - validate pathname carefully
     - stay here or go there?
 
-- mustache or angular templating in the note title and body
-    - add renderTitle
-
-- listview
-
 - position menus with ng-style to eliminate .css call
-
-- Close All
 
 - animations
     - workspace open/close
     - note creation slide-in
     - note deletion fade-out
 
+- reZ on load?
+    - maybe when Z hits some big number?
+    [{i:note.i, z:note.z},,,]
+    sort by note.z
+    set note.z to index in sorted output
+    save each note
+
+- backup
+    https://github.com/eligrey/FileSaver.js
+
+========================================
+Feature Candidates
+
+- better editor: ui-ace?
+- listview
+- de-expand / Close All
 - templates
 - calendar background
 - stock widgets
     - clock
     - clickable color palette
         - dropdown for target
-
 - note widget
     - append-text input
-    - better editor: ui-ace?
-
-- auto-adjust title width
-    http://stackoverflow.com/questions/118241/calculate-text-width-with-javascript
-    - on load
-    - after editTitle
-
-- reZ on load?
-    - maybe when Z hits some big number?
-    [{i:note.i, z:note.z},,,]
-    sort by note.z
-    set note.z to index in sorted output
-    save each note (ouch)
-
 - workspace:set grid
 - feature: cancel color picker change
-
 - object attribute editor
-
 - backup via email
     - paste []
 - undo/redo
 - mailto
 - export
 - sync
-
-- sharing ideas
-    - pubserver via socket.io: http://stackoverflow.com/questions/8970880/cross-domain-socket-io
-    - live workspace sharing via socket.io (connection brokering, message routing)
+- mustache or angular templating in the note title and body
+    - add renderTitle
 
 ==========
 
