@@ -320,7 +320,8 @@ function WorkspaceController($scope, $timeout, $window) {
     $scope.appLoaded = false;
     $scope.app = {
         appName: 'Soup7',
-        workspaceName: 'todo'
+        workspaceName: 'todo',
+        lastNoteId: 0
     };
     
     $scope.loadApp = function() {
@@ -359,7 +360,7 @@ function WorkspaceController($scope, $timeout, $window) {
     $scope.defaultWorkspace = {
         i: $scope.workspaceId,
         debug: false,
-        b:'lightgray',
+        b:'deepskyblue',
         grid: 24,
         defaultNote: {
             w:144, b:'lightyellow', c:'black', 'z-index':0
@@ -400,13 +401,14 @@ function WorkspaceController($scope, $timeout, $window) {
         }
     };
 
-    $scope.nextNoteId = 1;
-
     $scope.newNoteId = function() {
-        while ($scope.notes.hasOwnProperty('N' + $scope.nextNoteId)) {
-            $scope.nextNoteId++;
+        $scope.app.lastNoteId++;
+        while ($scope.notes.hasOwnProperty('N' + $scope.app.lastNoteId)) {
+            alert('Note ID collision:', $scope.app.lastNoteId);
+            $scope.app.lastNoteId++;
         }
-        return 'N' + $scope.nextNoteId;
+        $scope.saveApp();
+        return 'N' + $scope.app.lastNoteId;
     };
 
     $scope.topZ = function() {
@@ -430,9 +432,6 @@ function WorkspaceController($scope, $timeout, $window) {
             $scope.notes[note.i] = newNote;
         }
         angular.extend($scope.notes[note.i], note);
-
-        var id = parseInt(note.i.slice(1));
-        if (id > $scope.nextNoteId) $scope.nextNoteId = id + 1;
     };
 
     // during load, some notes are bound to the old (default) workspace object
@@ -561,7 +560,6 @@ function WorkspaceController($scope, $timeout, $window) {
         angular.forEach($scope.notes, function(note, index) {
             $scope.deleteNote(note);
         });
-        $scope.nextNoteId = 1;
     };
 
     $scope.wipeLocalStorage = function() {
