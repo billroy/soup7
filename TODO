@@ -3,6 +3,11 @@ Soup7 TODO
 ========================================
 BUGS
 
+- bug: notes without titles have display issues
+    - a black line under where the title would be
+    - the title icon shows
+- bug: an icon can be too narrow to drag without widening it first
+
 - bug: double spacing paragraphs doesn't work
 - bug: c:'white' causes body text to disappear
     - compute body background; use gray if text is white
@@ -17,6 +22,19 @@ BUGS
 ========================================
 BASIC FEATURES
 
+- backup
+    https://github.com/eligrey/FileSaver.js
+    - works on chrome not on safari
+    - safari may need blob.js
+        - added blob.js, doesn't help
+    - restore: look for '[' in the input bar?  or a command?
+        - handle id conflict
+
+- daily planner note
+- weekly planner note
+- calendar note
+- toFront/toBack
+
 - dragdrop
     - drop note on note
         - subnotes (.s[]? and .p?)
@@ -29,20 +47,11 @@ BASIC FEATURES
 
 - position menus with ng-style to eliminate .css call
 
-- animations
-    - workspace open/close
-    - note creation slide-in
-    - note deletion fade-out
+- compactZ() when Z hits some big number
 
-- reZ on load?
-    - maybe when Z hits some big number?
-    [{i:note.i, z:note.z},,,]
-    sort by note.z
-    set note.z to index in sorted output
-    save each note
+- animations on note enter/leave
 
-- backup
-    https://github.com/eligrey/FileSaver.js
+- themes: array of defaultWorkspaces[] with names and a dropdown in the commandbar to select
 
 ========================================
 Feature Candidates

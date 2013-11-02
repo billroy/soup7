@@ -8,6 +8,8 @@
 <script src='js/angular/1.1.5/angular.min.js'></script>
 <script src='js/ui-utils/modules/event/event.js'></script>
 <script src='js/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js'></script>
+<script src='js/FileSaver.js/FileSaver.js'></script>
+<script src='js/Blob.js/Blob.js'></script>
 
 <link href='css/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' rel='stylesheet'/>
 <link href='js/angular-bootstrap-colorpicker/css/colorpicker.css' rel='stylesheet'/>
@@ -196,7 +198,7 @@ p {
                 </svg>
                 <svg ng-show='!note.d && note.t' width='14' height='12'>
                     <path d='M4,3L8,6L4,9Z'
-                        style='fill:#000; stroke:#000;'/>
+                        ng-style='{fill:note.c, stroke:note.c}'/>
                 </svg>
                 <svg ng-show='note.d' width='14' height='12'>
                     <path d='M4,5L7,9L10,5Z'
@@ -314,7 +316,7 @@ app.directive('ngRightClick', function($parse) {
     };
 });
 
-function WorkspaceController($scope, $timeout, $window) {
+function WorkspaceController($scope, $timeout, $window, $filter) {
 
     //
     // app
@@ -388,11 +390,12 @@ function WorkspaceController($scope, $timeout, $window) {
 
     $scope.noteStyle = function(note) {
         return {
-            color: note.c,
+            color: (note.c == '#ffffff') ? 'black' : note.c,
             'border-color': note.c,
             left: note.x, 
             top: note.y, 
             width: note.w,
+            //opacity: note.o || 1.0,   // bug: angular update lag
             cursor: $scope.drag.resizable ? 'col-resize' : 'move',
             'z-index': note.z || 0
         }
@@ -400,7 +403,9 @@ function WorkspaceController($scope, $timeout, $window) {
 
     $scope.noteTitleStyle = function(note) {
         return {
-            background: note.b
+            color: note.c,
+            background: note.b,
+            'border-width': note.n ? 1 : 0      // no border if there's no title to avoid artifact
         }
     };
 
@@ -424,8 +429,14 @@ function WorkspaceController($scope, $timeout, $window) {
         return topz;
     };
 
-    $scope.toTop = function(note) {
-        note.z = $scope.topZ() + 1;   // caller must saveNote() to make this stick
+    $scope.toFront = function(note) {
+        note.z = $scope.topZ() + 1;
+        $scope.saveNote(note);
+    };
+
+    $scope.toBack = function(note) {
+        note.z = 0;
+        $scope.saveNote(note);
     };
 
     $scope.compactZ = function() {
@@ -435,13 +446,12 @@ function WorkspaceController($scope, $timeout, $window) {
         });
         
         noteData.sort(function(a, b){return a.z > b.z});
-        console.log('after:', noteData);
+
         angular.forEach(noteData, function(note, index) {
             $scope.notes[noteData[index].i].z = index;
             $scope.saveNote($scope.notes[noteData[index].i]);
         });
     };
-
 
     $scope.updateNote = function(note) {
         if (!$scope.notes.hasOwnProperty(note.i)) {
@@ -524,6 +534,20 @@ function WorkspaceController($scope, $timeout, $window) {
         $scope.selectedWorkspace = newName;
         $scope.saveApp();
         location.reload();
+    };
+
+    $scope.backupWorkspace = function() {
+        var n = {}; angular.copy($scope.notes, n);
+        var w = {}; angular.copy($scope.workspace, w);
+        var backup = [{k:'workspacebackup', workspace: w, notes: n}];
+        var blob = new Blob([JSON.stringify(backup)], {type: 'text/plain;charset=utf-8'});
+        var name = [
+            $scope.app.appName, '-',
+            $filter('date')(new Date(), 'yyyyMMdd-HHmmss'), '-',
+            $scope.app.workspaceName,
+            '.txt'
+        ].join('');
+        saveAs(blob, name);
     };
 
     // save note to optional workspace
@@ -682,7 +706,7 @@ function WorkspaceController($scope, $timeout, $window) {
             return true;
         }
         var note = $scope.notes[id];
-        $scope.toTop(note);
+        $scope.toFront(note);
 
         e.dataTransfer.dropEffect = 'move';
         e.dataTransfer.effectAllowed = 'move';
@@ -947,10 +971,12 @@ function WorkspaceController($scope, $timeout, $window) {
         {i:'icon-pencil', t:'Edit Note Title',      x:'editTitle(menu.selectedNote);hideMenu()'},
         {i:'icon-edit', t:'Edit Note Body',         x:'editText(menu.selectedNote);hideMenu()'},
         {s:1},
-        {i:'icon-star', t:'Set Text Color',         x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
-        {i:'icon-star', t:'Set Background Color',   x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Text Color',         x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Background Color',   x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
         {s:1},
         {i:'icon-share', t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
+        {s:1},
+        {i:'icon-arrow-down', t:'Send to Back',     x:'toBack(menu.selectedNote);hideMenu()'},
         {s:1},
         {i:'icon-ok', t:'Move to Done',             x:'sendNote(menu.selectedNote,"done");hideMenu()'},
         {i:'icon-arrow-right', t:'Move To...', m:1, x:'showSendToMenu($event)'},    // m for submenu
@@ -961,10 +987,12 @@ function WorkspaceController($scope, $timeout, $window) {
     $scope.workspaceMenu = [
         {i:'icon-plus-sign', t:'Add Workspace',             x:'addWorkspace();hideMenu()'},
         {s:1},
-        {i:'icon-star', t:'Set Workspace Background',       x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Workspace Background',       x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
         {s:1},
-        {i:'icon-star', t:'Set Default Note Text Color',    x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
-        {i:'icon-star', t:'Set Default Note Background',    x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Default Note Text Color',    x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Default Note Background',    x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
+        {s:1},
+        {i:'icon-download-alt', t:'Back Up This Workspace', x:'backupWorkspace();hideMenu()'},
         {s:1},
         {i:'icon-trash', t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
         {i:'icon-trash', t:'Delete This Workspace',         x:'deleteWorkspace();hideMenu()'},
