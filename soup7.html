@@ -163,15 +163,17 @@ p {
         </form>
     </div>
 
-    <div ng-show='workspace.debug' class='debug'>
-        <div>Debug info:</div>
-        <div>App: {{app}}</div>
-        <div>workspaceName: {{selectedWorkspace}}</div>
-        <div>Workspace: {{workspace}}</div>
-        <div>Notes: <div ng-repeat='note in notes'>{{note}}</div></div>
-        <div>Color: {{pickedColor}}</div>
-        <div>Resize: {{drag.resizing}}</div>
-        <div>Picker: {{isColorPickerVisible()}}</div>
+    <div ng-switch='workspace.debug'>
+        <div ng-switch-when='true' class='debug'>
+            <div>Debug info:</div>
+            <div>App: {{app}}</div>
+            <div>workspaceName: {{selectedWorkspace}}</div>
+            <div>Workspace: {{workspace}}</div>
+            <div>Notes: <div ng-repeat='note in notes'>{{note}}</div></div>
+            <div>Color: {{pickedColor}}</div>
+            <div>Resize: {{drag.resizing}}</div>
+            <div>Picker: {{isColorPickerVisible()}}</div>
+        </div>
     </div>
 
     <div class='note' ng-repeat='note in notes' id='note_{{note.i}}'
@@ -511,7 +513,7 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
                     return;
                 }
             }
-            alert('Unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
+            if ($scope.workspace.debug) alert('Unexpected item in workspace storage:' + key + '/' + localStorage[key]); 
             if ($scope.workspace.debug >= 999) localStorage.removeItem(key);
         });
         $scope.setNotePrototypes();
@@ -673,7 +675,7 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     };
 
     $scope.makeNotes = function(max) {
-        var max = max || 100;
+        max = max || 100;
         var t0 = new Date().getTime();
         for (var i=0; i < max; i++) {
             var elapsed = new Date().getTime() - t0;
@@ -884,9 +886,17 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     // add note via command bar
     $scope.addNoteFromForm = function() {
         // called from commandBar form, so 'this' is $scope here
-        if (this.newNoteText[0] == '.') {           // command
+        if (this.newNoteText[0] == '.') {           // command in scope
             try {
                 eval('$scope.' + this.newNoteText.slice(1));
+            } catch(e) {
+                console.log('Error:', e);
+            }
+            this.newNoteText = '';
+        }
+        else if (this.newNoteText[0] == '=') {           // command
+            try {
+                eval(this.newNoteText.slice(1));
             } catch(e) {
                 console.log('Error:', e);
             }

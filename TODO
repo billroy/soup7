@@ -3,59 +3,47 @@ Soup7 TODO
 ========================================
 BUGS
 
-- bug: notes without titles have display issues
-    - a black line under where the title would be
-    - the title icon shows
-- bug: an icon can be too narrow to drag without widening it first
-
 - bug: double spacing paragraphs doesn't work
-- bug: c:'white' causes body text to disappear
-    - compute body background; use gray if text is white
-        - need darker()/lighter()
 - bug: click to drag on image-note's image -> alert "bogus note id"
 - bug: Enter should end title edit
 - bug: stale target highlighting after dragdrop (disabled for now)
 - bug: cursor pointer should be resize cursor during resize
 - bug: maybe edit should toTop()?
-- bug: saveNote(...,to): verify destination doesn't already exist
+- bug: handle uppercase image extensions
 
-- chore: sweep newNoteId after:
-    - updateNote: saveNote after update if the note is new (on create)
-    - review savenote
 ========================================
 BASIC FEATURES
-
-- backup
-    - restore: look for '[' in the input bar?  or a command?
-        - handle id conflict
-
-- daily planner note
-- weekly planner note
-- calendar note
-- Send a Copy To...
-- Copy Note From...
 
 - dragdrop
     - drop note on note
         - subnotes (.s[]? and .p?)
+        - note-in-note rendering
+    - bug: click to drag on image-note's image -> alert "bogus note id"
     - bug: stale target highlighting after dragdrop (disabled for now)
     - touch event support: http://www.html5rocks.com/en/mobile/touch/
+    - drag note out of note
 
+========================================
+CHORES
+
+- position menus with ng-style to eliminate .css call
+- compactZ() when Z hits some big number
+
+========================================
+FEATURE CANDIDATES
+
+- markdown notes (starting with '#')
+- templates
+    - daily planner note
+    - weekly planner note
+    - calendar note
+- themes: array of defaultWorkspaces[] with names and a dropdown in the commandbar to select
+- Send as E-mail...
 - Clone Workspace To...: copy notes and workspace settings
     - validate pathname carefully
     - stay here or go there?
-
-- position menus with ng-style to eliminate .css call
-
-- compactZ() when Z hits some big number
-
-- animations on note enter/leave
-
-- themes: array of defaultWorkspaces[] with names and a dropdown in the commandbar to select
-
-========================================
-Feature Candidates
-
+- Send a Copy To...
+- Copy Note From...
 - better editor: ui-ace?
 - listview
 - de-expand / Close All
@@ -78,6 +66,7 @@ Feature Candidates
 - sync
 - mustache or angular templating in the note title and body
     - add renderTitle
+- animations on note enter/leave
 
 ==========
 
