@@ -8,8 +8,8 @@
 <script src='js/angular/1.1.5/angular.min.js'></script>
 <script src='js/ui-utils/modules/event/event.js'></script>
 <script src='js/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js'></script>
-<script src='js/FileSaver.js/FileSaver.js'></script>
 <script src='js/Blob.js/Blob.js'></script>
+<script src='js/FileSaver.js/FileSaver.js'></script>
 
 <link href='css/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css' rel='stylesheet'/>
 <link href='js/angular-bootstrap-colorpicker/css/colorpicker.css' rel='stylesheet'/>
@@ -453,13 +453,18 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
         });
     };
 
+    // create a note, or update an existing one
     $scope.updateNote = function(note) {
+        var isNew = false;
+        if (!note.hasOwnProperty('i')) note.i = $scope.newNoteId();
         if (!$scope.notes.hasOwnProperty(note.i)) {
+            isNew = true;
             var newNote = {};
             newNote.__proto__ = $scope.workspace.defaultNote;
             $scope.notes[note.i] = newNote;
         }
         angular.extend($scope.notes[note.i], note);
+        if (isNew) $scope.saveNote($scope.notes[note.i]);
     };
 
     // during load, some notes are bound to the old (default) workspace object
@@ -539,7 +544,7 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     $scope.backupWorkspace = function() {
         var n = {}; angular.copy($scope.notes, n);
         var w = {}; angular.copy($scope.workspace, w);
-        var backup = [{k:'workspacebackup', workspace: w, notes: n}];
+        var backup = {k:'workspacebackup', workspace: w, notes: n};
         var blob = new Blob([JSON.stringify(backup)], {type: 'text/plain;charset=utf-8'});
         var name = [
             $scope.app.appName, '-',
@@ -549,6 +554,34 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
         ].join('');
         saveAs(blob, name);
     };
+    
+    $scope.restoreWorkspace = function() {
+        var backupText = prompt('Paste the text of the backup file below and press Enter:','');
+        if (!backupText) return;
+        var backupData;
+        try {
+            backupData = JSON.parse(backupText);
+            if (backupData.k != 'workspacebackup') {
+                alert('That does not appear to be a workspace backup.');
+                return;
+            }
+            angular.extend($scope.workspace, backupData.workspace);
+            $scope.saveWorkspace();
+            angular.forEach(backupData.notes, function(note, index) {
+                $scope.updateNote(note);
+            });
+        } catch(e) {
+            alert('ERROR: Could not import backup data.');
+        }
+    };
+
+/***
+    $scope.saveAllNotes = function() {
+        angular.forEach($scope.notes, function(note, index) {
+            $scope.saveNote($scope.notes[note.i]);
+        });
+    };
+***/
 
     // save note to optional workspace
     $scope.saveNote = function(note, workspace) {
@@ -629,7 +662,6 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     $scope.makeNote = function(title, text) {
         var newNote = {};
         angular.extend(newNote, {
-            i: $scope.newNoteId(),
             d: 1,
             n: title,
             t: text,
@@ -638,7 +670,6 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
             z: $scope.topZ() + 1
         });
         $scope.updateNote(newNote);
-        $scope.saveNote($scope.notes[newNote.i]);
     };
 
     $scope.makeNotes = function(max) {
@@ -863,15 +894,12 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
         }
         else if (this.newNoteText[0] == '{') {     // json note
             var newNote = JSON.parse(this.newNoteText);
-            newNote.i = $scope.newNoteId();
             $scope.updateNote(newNote);
-            $scope.saveNote($scope.notes[newNote.i]);
             this.newNoteText = '';            
         }
         else if (this.isUrl.test(this.newNoteText)) {   // image note
             var newNote = {};
             angular.extend(newNote, {
-                i: this.newNoteId(),
                 d: 1,
                 t: this.newNoteText,
                 x: this.nextXPos(),
@@ -879,14 +907,12 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
                 z: this.topZ() + 1
             });
             this.updateNote(newNote);
-            this.saveNote(this.notes[newNote.i]);
             this.newNoteText = '';            
         }
         else {
             if (this.newNoteText.length == 0) return;
             var lines = this.newNoteText.split('/');
             var newNote = {
-                i: $scope.newNoteId(),
                 n: lines[0],
                 x: $scope.nextXPos(),
                 y: $scope.nextYPos(),
@@ -899,7 +925,6 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
                 newNote.d = 1;
             }
             this.updateNote(newNote);
-            this.saveNote(this.notes[newNote.i]);
             this.newNoteText = '';
         }
     };
@@ -941,12 +966,11 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
         var newNote = {};
         angular.extend(newNote, note);
         angular.extend(newNote, {
-            i: $scope.newNoteId(),
-            x: newNote.x + $scope.workspace.grid,
+            i: $scope.newNoteId(),                  // new note gets new id
+            x: newNote.x + $scope.workspace.grid,   // and offset position
             y: newNote.y + $scope.workspace.grid
         });
-        $scope.updateNote(newNote);
-        $scope.saveNote(newNote);
+        $scope.updateNote(newNote);     // will save the new note
     };
 
     $scope.isUrl = /^(http:|https:)/;
@@ -993,6 +1017,7 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
         {i:'icon-tint', t:'Set Default Note Background',    x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
         {s:1},
         {i:'icon-download-alt', t:'Back Up This Workspace', x:'backupWorkspace();hideMenu()'},
+        {i:'icon-download-alt', t:'Restore Workspace',      x:'restoreWorkspace();hideMenu()'},
         {s:1},
         {i:'icon-trash', t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
         {i:'icon-trash', t:'Delete This Workspace',         x:'deleteWorkspace();hideMenu()'},

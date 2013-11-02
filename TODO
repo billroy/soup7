@@ -19,21 +19,21 @@ BUGS
 - bug: maybe edit should toTop()?
 - bug: saveNote(...,to): verify destination doesn't already exist
 
+- chore: sweep newNoteId after:
+    - updateNote: saveNote after update if the note is new (on create)
+    - review savenote
 ========================================
 BASIC FEATURES
 
 - backup
-    https://github.com/eligrey/FileSaver.js
-    - works on chrome not on safari
-    - safari may need blob.js
-        - added blob.js, doesn't help
     - restore: look for '[' in the input bar?  or a command?
         - handle id conflict
 
 - daily planner note
 - weekly planner note
 - calendar note
-- toFront/toBack
+- Send a Copy To...
+- Copy Note From...
 
 - dragdrop
     - drop note on note
