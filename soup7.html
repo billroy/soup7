@@ -5,7 +5,8 @@
 <title>Soup7</title>
 <script src='js/jquery/1.10.2/jquery.min.js'></script>
 <script src='js/jqueryui/1.10.3/jquery-ui.min.js'></script>
-<script src='js/angular/1.1.5/angular.min.js'></script>
+<script src='js/angular/1.2.0/angular.min.js'></script>
+<script src='js/angular/1.2.0/angular-sanitize.min.js'></script>
 <script src='js/ui-utils/modules/event/event.js'></script>
 <script src='js/angular-bootstrap-colorpicker/js/bootstrap-colorpicker-module.js'></script>
 <script src='js/Blob.js/Blob.js'></script>
@@ -209,10 +210,10 @@ p {
             </div>
             <div class='notetitle' style='float:none'
                 ng-dblclick='editTitle(note)'
-                ng-hide='note._editingTitle'
-                ng-bind-html-unsafe='note.n'>
+                ng-hide='note.editingTitle'
+                ng-bind-html='note.n'>
             </div>
-            <span ng-show='note._editingTitle'>
+            <span ng-show='note.editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
                     ng-model='note.n'>
                 <span class='buttons'>
@@ -226,9 +227,9 @@ p {
             ng-mouseover='mouseover(note, $event)'
             ng-mouseleave='mouseleave(note, $event)'
             ng-dblclick='editText(note)'>
-            <div ng-show='note.d&&!note._editingText' 
-                ng-bind-html-unsafe='renderBody(note)'></div>
-            <div ng-show='note.d&&note._editingText'>
+            <div ng-show='note.d&&!note.editingText' 
+                ng-bind-html='renderBody(note)'></div>
+            <div ng-show='note.d&&note.editingText'>
                 <textarea name='noteBody' ng-style='{width:"95%"}'
                     ng-model='note.t'></textarea>
                 <span class='buttons'>
@@ -244,7 +245,7 @@ p {
         ng-mouseleave='hideMenu()'>
         <div ng-repeat='item in workspaceMenu'>
             <div ng-hide='item.s'
-                ng-click='{{item.x}}'
+                ng-click='$eval(item.x)'
                 ng-class='overclass'
                 ng-mouseenter='overclass="highlight"'
                 ng-mouseleave='overclass=""'>
@@ -259,7 +260,7 @@ p {
         ng-mouseleave='menu.showingSendToMenu ? 0 : hideMenu()'>
         <div ng-repeat='item in noteMenu'>
             <div ng-hide='item.s'
-                ng-click='{{item.x}}'
+                ng-click='$eval(item.x)'
                 ng-class='overclass'
                 ng-mouseenter='overclass="highlight"'
                 ng-mouseleave='overclass=""'>
@@ -303,7 +304,7 @@ p {
     maybe: o:opacity k:kind (workspace/svg) s:selected e:error editing editable
 */
 
-window.app = angular.module('Soup7', ['ui.event', 'colorpicker.module']);
+window.app = angular.module('Soup7', ['ui.event', 'colorpicker.module', 'ngSanitize']);
 
 // from http://jsfiddle.net/bcaudan/vTZZ5/
 app.directive('ngRightClick', function($parse) {
@@ -942,16 +943,16 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     // edit title of note
     $scope.editTitle = function(note) {
         note._saved_title = note.n;
-        note._editingTitle = 1;
+        note.editingTitle = 1;
     };
     $scope.cancelEditTitle = function(note) {
         note.n = note._saved_title;
         delete note._saved_title;
-        delete note._editingTitle;
+        delete note.editingTitle;
     };
     $scope.saveTitle = function(note) {
         delete note._saved_title;   // could keep this for undo
-        delete note._editingTitle;
+        delete note.editingTitle;
         $scope.saveNote(note);
     };
 
@@ -959,16 +960,16 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     $scope.editText = function(note) {
         note._saved_text = note.t;
         note.d = 1;
-        note._editingText = 1;
+        note.editingText = 1;
     };
     $scope.cancelEditText = function(note) {
         note.t = note._saved_text;
         delete note._saved_text;
-        delete note._editingText;
+        delete note.editingText;
     };
     $scope.saveText = function(note) {
         delete note._saved_text;   // could keep this for undo
-        delete note._editingText;
+        delete note.editingText;
         $scope.saveNote(note);
     };
 
@@ -1040,6 +1041,10 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     ];
 
     $scope.menu = {};
+
+    $scope.doMenuCommand = function(command) {
+        eval(command);
+    };
 
     $scope.showNoteMenu = function(note, event) {
         event.preventDefault();
