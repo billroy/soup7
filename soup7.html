@@ -245,7 +245,7 @@ p {
         ng-mouseleave='hideMenu()'>
         <div ng-repeat='item in workspaceMenu'>
             <div ng-hide='item.s'
-                ng-click='$eval(item.x)'
+                ng-click='doMenuCommand(item, $event)'
                 ng-class='overclass'
                 ng-mouseenter='overclass="highlight"'
                 ng-mouseleave='overclass=""'>
@@ -260,7 +260,7 @@ p {
         ng-mouseleave='menu.showingSendToMenu ? 0 : hideMenu()'>
         <div ng-repeat='item in noteMenu'>
             <div ng-hide='item.s'
-                ng-click='$eval(item.x)'
+                ng-click='doMenuCommand(item, $event)'
                 ng-class='overclass'
                 ng-mouseenter='overclass="highlight"'
                 ng-mouseleave='overclass=""'>
@@ -301,7 +301,9 @@ p {
 /* Note attributes:
     a b:background c:color d:displayText e f g h:height i:id
     j k l m n:title o p q r s t:text u v w:width x:left y:top z:zindex
-    maybe: o:opacity k:kind (workspace/svg) s:selected e:error editing editable
+
+    maybe: o:opacity k:kind (workspace/svg) s: subnote selected e:error editing editable
+    TODO: e:editingNote et: editingTitle
 */
 
 window.app = angular.module('Soup7', ['ui.event', 'colorpicker.module', 'ngSanitize']);
@@ -391,24 +393,24 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     //
     $scope.notes = {};
 
+    $scope.noteTitleStyle = function(note) {
+        return {
+            color: note.over ? 'red' : note.c,
+            background: note.b,
+            'border-width': note.n ? 1 : 0      // no border if there's no title to avoid artifact
+        }
+    };
+
     $scope.noteStyle = function(note) {
         return {
             color: (note.c == '#ffffff') ? 'black' : note.c,
-            'border-color': note.c,
+            'border-color': note.over ? 'red' : note.c,
             left: note.x, 
             top: note.y, 
             width: note.w,
             //opacity: note.o || 1.0,   // bug: angular update lag
             cursor: $scope.drag.resizable ? 'col-resize' : 'move',
             'z-index': note.z || 0
-        }
-    };
-
-    $scope.noteTitleStyle = function(note) {
-        return {
-            color: note.c,
-            background: note.b,
-            'border-width': note.n ? 1 : 0      // no border if there's no title to avoid artifact
         }
     };
 
@@ -730,60 +732,57 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
 
         var e = event.originalEvent;
         var id = e.target.id;
-        if (!id.match(/^note_/)) {
-            alert('Bogus note id');
+        var dragNote = $scope.getEnclosingNote(e.target);
+        if (!dragNote) {
+            alert('Sorry, I can\'t drag that.');
             return true;
         }
-        id = id.slice(5);
-        if (!$scope.notes.hasOwnProperty(id)) {
-            alert('Unknown note id');
-            return true;
-        }
-        var note = $scope.notes[id];
-        $scope.toFront(note);
+        $scope.toFront(dragNote);
 
         e.dataTransfer.dropEffect = 'move';
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setDragImage(angular.element('.dragImage')[0], 0, 0);
 
-        if ($scope.inResizeZone(note, event)) {
+        if ($scope.inResizeZone(dragNote, event)) {     // start a resize
             $scope.drag.resizing = true;
-            $scope.drag.startingWidth = note.w;
+            $scope.drag.startingWidth = dragNote.w;
         }
-        else {
-            if ($scope.workspace.grid && !e.shiftKey) $scope.snapToGrid(note);
+        else {                                      // start a drag
+            if ($scope.workspace.grid && !e.shiftKey) $scope.snapToGrid(dragNote);
             e.target.style.opacity = 0.8;
         }
 
         angular.extend($scope.drag, {
-            startingX: note.x,      // starting note position
-            startingY: note.y,
+            startingX: dragNote.x,      // starting note position
+            startingY: dragNote.y,
             offsetX: e.offsetX,     // cursor offset within note at mousedown
             offsetY: e.offsetY,
             noteElement: e.target,
-            noteId: id,
+            dragNote: dragNote,
             active: true,
         });
         return false;
     };
 
     $scope.dragover = function(event) {
-        //console.log('dragover', event);
         $scope.stopEvent(event);
         return false;
     };
 
     $scope.dragenter = function(event) {
-        // this / e.target is the current hover target.
-        //event.originalEvent.target.classList.add('over');
-        //console.log('dragenter:', event);
-        $scope.stopEvent(event);
+        var e = event.originalEvent;
+        var hoverNote = $scope.getEnclosingNote(e.target);
+        if (hoverNote && e.ctrlKey && (hoverNote.i != $scope.drag.dragNote.i)) {
+            $scope.stopEvent(event);
+            hoverNote.over = true;
+        }
         return false;
     };
 
     $scope.dragleave = function(event) {
-        //event.originalEvent.target.classList.remove('over');
-        //console.log('dragleave', event);
+        var e = event.originalEvent;
+        var hoverNote = $scope.getEnclosingNote(e.target);
+        if (hoverNote) delete hoverNote.over;
     };
 
     $scope.snapToGrid = function(note) {
@@ -796,7 +795,7 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
 
     $scope.dragging = function(event) {
         var e = event.originalEvent;
-        var dragNote = $scope.notes[$scope.drag.noteId];
+        var dragNote = $scope.drag.dragNote;
         var grid = $scope.workspace.grid;
 
         if ($scope.drag.resizing) {
@@ -820,39 +819,42 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
         }
     };
 
+    $scope.getEnclosingNote = function(element) {
+        while (element) {
+            e = angular.element(element);
+            if (e.hasClass('note')) {
+                // "note_N123" -> "N123" -> $scope.notes["N123"]
+                return $scope.notes[element.id.slice(5)];
+            }
+            if (e.hasClass('workspace')) return undefined;
+            if (e == angular.element('body')) return undefined;
+            element = element.parentElement;
+        }
+        return undefined;
+    };
+
     $scope.drop = function(event) {
         $scope.stopEvent(event);
         if (!$scope.drag.active) return;
         $scope.drag.noteElement.style.opacity = 1.0;
         var e = event.originalEvent;
         var target = e.target;
-        var id = target.id;
-        if ($scope.drag.resizing) {
-            $scope.saveNote($scope.notes[$scope.drag.noteId]);
-            $scope.drag = {};
-        }
-        else if (!id.match(/^note_/)) {  // drop on workspace
-            $scope.saveNote($scope.notes[$scope.drag.noteId]);
-            $scope.drag = {};
-        }
-        else {        
-            // TODO: drop on note
-            $scope.drag = {};
-            alert('Zombie drag.');
-            return false;
-            var droppedNoteId = id.slice(5);
-            console.log('dropped on note', droppedNoteId);
-            $scope.notes[droppedNoteId].t += [
-                '<p>', $scope.notes[$scope.draggedNoteId].n, '</p>\n',
-                '<p>', $scope.notes[$scope.draggedNoteId].t, '</p>'
+        var dropNote = $scope.getEnclosingNote(e.target);
+        if (dropNote && e.ctrlKey) {    // bug: this isn't working
+            dropNote.t += [
+                '<p>', $scope.drag.dragNote.n, '</p>\n',
+                '<p>', $scope.drag.dragNote.t, '</p>'
             ].join('');
+            $scope.saveNote(dropNote);
         }
+        $scope.saveNote($scope.drag.dragNote);
+        $scope.drag = {};
         return false;
     };
 
     $scope.dragend = function(event) { 
-       // this/e.target is the source node.
-        var e = event.originalEvent;
+        // this/e.target is the source node.
+        //var e = event.originalEvent;
         //console.log('dragend', event);  
         return false;
     };
@@ -1003,48 +1005,44 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     //  menus
     //
     $scope.noteMenu = [
-        {i:'icon-pencil', t:'Edit Note Title',      x:'editTitle(menu.selectedNote);hideMenu()'},
-        {i:'icon-edit', t:'Edit Note Body',         x:'editText(menu.selectedNote);hideMenu()'},
+        {i:'icon-pencil', t:'Edit Note Title',      x:'editTitle(menu.selectedNote)'},
+        {i:'icon-edit', t:'Edit Note Body',         x:'editText(menu.selectedNote)'},
         {s:1},
-        {i:'icon-tint', t:'Set Text Color',         x:'setNoteColor("c", menu.selectedNote, $event);hideMenu()'},
-        {i:'icon-tint', t:'Set Background Color',   x:'setNoteColor("b", menu.selectedNote, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Text Color',         x:'setNoteColor("c", menu.selectedNote, $event)'},
+        {i:'icon-tint', t:'Set Background Color',   x:'setNoteColor("b", menu.selectedNote, $event)'},
         {s:1},
-        {i:'icon-share', t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote);hideMenu()'},
+        {i:'icon-share', t:'Duplicate Note',        x:'duplicateNote(menu.selectedNote)'},
         {s:1},
-        {i:'icon-arrow-down', t:'Send to Back',     x:'toBack(menu.selectedNote);hideMenu()'},
+        {i:'icon-arrow-down', t:'Send to Back',     x:'toBack(menu.selectedNote)'},
         {s:1},
-        {i:'icon-ok', t:'Move to Done',             x:'sendNote(menu.selectedNote,"done");hideMenu()'},
-        {i:'icon-arrow-right', t:'Move To...', m:1, x:'showSendToMenu($event)'},    // m for submenu
+        {i:'icon-ok', t:'Move to Done',             x:'sendNote(menu.selectedNote,"done")'},
+        {i:'icon-arrow-right', t:'Move To...', m:1, x:'showSendToMenu()'},    // m for submenu
         {s:1},
-        {i:'icon-trash', t:'Move to Trash',         x:'deleteNote(menu.selectedNote);hideMenu()'}
+        {i:'icon-trash', t:'Move to Trash',         x:'deleteNote(menu.selectedNote)'}
     ];
     
     $scope.workspaceMenu = [
-        {i:'icon-plus-sign', t:'Add Workspace',             x:'addWorkspace();hideMenu()'},
+        {i:'icon-plus-sign', t:'Add Workspace',             x:'addWorkspace()'},
         {s:1},
-        {i:'icon-tint', t:'Set Workspace Background',       x:'setWorkspaceColor("b", workspace, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Workspace Background',       x:'setWorkspaceColor("b", workspace, $event)'},
         {s:1},
-        {i:'icon-tint', t:'Set Default Note Text Color',    x:'setDefaultNoteColor("c", workspace.defaultNote, $event);hideMenu()'},
-        {i:'icon-tint', t:'Set Default Note Background',    x:'setDefaultNoteColor("b", workspace.defaultNote, $event);hideMenu()'},
+        {i:'icon-tint', t:'Set Default Note Text Color',    x:'setDefaultNoteColor("c", workspace.defaultNote, $event)'},
+        {i:'icon-tint', t:'Set Default Note Background',    x:'setDefaultNoteColor("b", workspace.defaultNote, $event)'},
         {s:1},
-        {i:'icon-download-alt', t:'Back Up This Workspace', x:'backupWorkspace();hideMenu()'},
-        {i:'icon-download-alt', t:'Restore Workspace',      x:'restoreWorkspace();hideMenu()'},
+        {i:'icon-download-alt', t:'Back Up This Workspace', x:'backupWorkspace()'},
+        {i:'icon-download-alt', t:'Restore Workspace',      x:'restoreWorkspace()'},
         {s:1},
-        {i:'icon-trash', t:'Clear This Workspace',          x:'deleteAllNotes();hideMenu()'},
-        {i:'icon-trash', t:'Delete This Workspace',         x:'deleteWorkspace();hideMenu()'},
+        {i:'icon-trash', t:'Clear This Workspace',          x:'deleteAllNotes()'},
+        {i:'icon-trash', t:'Delete This Workspace',         x:'deleteWorkspace()'},
         {s:1},
-        {i:'icon-warning-sign', t:'Wipe All Workspaces',    x:'wipeLocalStorage();hideMenu()'},
+        {i:'icon-warning-sign', t:'Wipe All Workspaces',    x:'wipeLocalStorage()'},
         {s:1},
-        {i:'icon-trash', t:'Empty Trash',                   x:'emptyTrash();hideMenu()'},
+        {i:'icon-trash', t:'Empty Trash',                   x:'emptyTrash()'},
         {s:1},
-        {i:'icon-eye-open', t:'Toggle Debug',               x:'setDebug(!workspace.debug);hideMenu()'}
+        {i:'icon-eye-open', t:'Toggle Debug',               x:'setDebug(!workspace.debug)'}
     ];
 
     $scope.menu = {};
-
-    $scope.doMenuCommand = function(command) {
-        eval(command);
-    };
 
     $scope.showNoteMenu = function(note, event) {
         event.preventDefault();
@@ -1078,7 +1076,8 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
         });
     };
 
-    $scope.showSendToMenu = function(event) {
+    $scope.showSendToMenu = function() {
+        var event = $scope.menu.event;
         angular.extend($scope.menu, {
             showingSendToMenu: true,
             x: event.clientX + $window.pageXOffset,
@@ -1090,6 +1089,12 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
             left: $scope.menu.x,
             top: $scope.menu.y
         });
+    };
+
+    $scope.doMenuCommand = function(item, event) {
+        $scope.menu.event = event;
+        $scope.$eval(item.x);
+        if (!item.m) $scope.hideMenu();
     };
 
     $scope.pickedColor = '';
