@@ -211,7 +211,7 @@ p {
             <div class='notetitle' style='float:none'
                 ng-dblclick='editTitle(note)'
                 ng-hide='note.editingTitle'
-                ng-bind-html='note.n'>
+                ng-bind-html='note.n | unsafe'>
             </div>
             <span ng-show='note.editingTitle'>
                 <input type='text' name='noteTitle' ng-style='{width:"80%"}'
@@ -228,7 +228,7 @@ p {
             ng-mouseleave='mouseleave(note, $event)'
             ng-dblclick='editText(note)'>
             <div ng-show='note.d&&!note.editingText' 
-                ng-bind-html='renderBody(note)'></div>
+                ng-bind-html='renderBody(note) | unsafe'></div>
             <div ng-show='note.d&&note.editingText'>
                 <textarea name='noteBody' ng-style='{width:"95%"}'
                     ng-model='note.t'></textarea>
@@ -318,6 +318,13 @@ app.directive('ngRightClick', function($parse) {
                 fn(scope, {$event:event});
             });
         });
+    };
+});
+
+// from http://stackoverflow.com/questions/18340872/how-do-you-use-sce-trustashtmlstring-to-replicate-ng-bind-html-unsafe-in-angu
+app.filter('unsafe', function($sce) {
+    return function(val) {
+        return $sce.trustAsHtml(val);
     };
 });
 
@@ -990,15 +997,20 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
     $scope.isImg = /(.jpg|.jpeg|.png|.gif|.tiff)$/;
 
     $scope.renderBody = function(note) {
-        if (!note.t) return '';
-        if ($scope.isUrl.test(note.t)) {    // image url
+        var markup;
+        if (!note.t) markup = '';
+        else if (note.t[0] == '<') markup = note.t;    // html body
+        else if ($scope.isUrl.test(note.t)) {    // image url
             if ($scope.isImg.test(note.t)) {
-                return '<img src="' + note.t + '" width="' + note.w + '"/>';
+                markup = '<img src="' + note.t + '" width="' + note.w + '"/>';
             }
+            else markup = note.t;
         }
-        if (note.t[0] == '<') return note.t;    // html body
-        var lines = note.t.split('\n');
-        return '<p>' + lines.join('</p>\n<p>') + '</p>';    // else htmlify body
+        else {
+            var lines = note.t.split('\n');
+            markup = '<p>' + lines.join('</p>\n<p>') + '</p>';    // else htmlify body
+        }
+        return markup;
     };
 
     //
