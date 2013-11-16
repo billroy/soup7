@@ -23,6 +23,8 @@ BASIC FEATURES
     - touch event support: http://www.html5rocks.com/en/mobile/touch/
     - drag note out of note
 
+- backup all workspaces
+
 - Soup7 menu
     - Help
     - About Soup7
@@ -34,12 +36,20 @@ BASIC FEATURES
 ========================================
 CHORES
 
+- move note methods out of the scope?
+    - defaultnote inherits from note
+    - note defines all the note-based methods
+        menuNote.setTextColor()
+        menuNote.saveNote()
 - position menus with ng-style to eliminate .css call
 - compactZ() when Z hits some big number
 
 ========================================
 FEATURE CANDIDATES
 
+- filter bar
+- file: urls for images (makes sense with localStorage)
+- multiple selection for commands
 - checklists
     - bulleted list with checkboxes
     - state of checks is saved with note

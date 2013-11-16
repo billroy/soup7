@@ -1,7 +1,7 @@
 The week/<style type='text/css'>
 div.weekday {
     width: 100%;
-    height: 46px;
+    height: 70px;
     margin: 0 0 0 0;
     border: 1px solid lightgray;
     border-radius: 6px;
