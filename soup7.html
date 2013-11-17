@@ -779,6 +779,12 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
 			newNote.x += this.grid;         // offset the position
 			newNote.y += this.grid;
 			this.createNote(newNote);
+		},
+		
+		updateNoteCaches: function() {
+            angular.forEach($scope.notes, function(note, index) {
+                note.updateCaches();
+            });
 		}
 	};
 
@@ -1237,25 +1243,38 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
 	};
 
 	$scope.setNoteColor = function(attr, note) {
-		$scope.setObjectColor(attr, note, 
-				(note[attr] || $scope.workspace.defaultNote[attr]), function(note) {
-			note.save();
-		});
+		$scope.setObjectColor(attr, note, (note[attr] || $scope.workspace.defaultNote[attr]), 
+            function(note) {
+                note.updateCaches();
+            },
+			function(note) {
+			    note.save();
+		    }
+		);
 	};
 
 	$scope.setWorkspaceColor = function(attr, obj) {
-		$scope.setObjectColor(attr, obj, obj[attr], function(workspace) {
-			$scope.workspace.save();
-		});
+		$scope.setObjectColor(attr, obj, obj[attr], 
+            function(workspace) {
+            },
+            function(workspace) {
+                $scope.workspace.save();
+            }
+        );
 	};
 
 	$scope.setDefaultNoteColor = function(attr, note) {
-		$scope.setObjectColor(attr, note, note[attr], function(note) {
-			$scope.workspace.save();
-		});
+		$scope.setObjectColor(attr, note, note[attr], 
+		    function(note) {
+		        $scope.workspace.updateNoteCaches();
+            },
+            function(note) {
+                $scope.workspace.save();
+            }
+        );
 	};
 	
-	$scope.setObjectColor = function(attr, obj, initialColor, callback) {
+	$scope.setObjectColor = function(attr, obj, initialColor, updateCallback, doneCallback) {
 		$scope.pickedColor = initialColor;
 		$scope.showColorPicker();
 
@@ -1263,6 +1282,7 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
 		var colorWatch = $scope.$watch('pickedColor', function(newValue, oldValue) {
 			if (newValue === oldValue) return;
 			obj[attr] = newValue;
+			if (updateCallback) updateCallback(obj);
 		});
 
 		// watch isColorPickerVisible to become false and saveNote
@@ -1272,7 +1292,7 @@ function WorkspaceController($scope, $timeout, $window, $filter) {
 		var watchPickerDisappear = function() {
 			var pickerNewState = $scope.isColorPickerVisible();
 			if (pickerLastState && !pickerNewState) {   // look for falling edge
-				if (callback) callback(obj);	// fire the callback
+				if (doneCallback) doneCallback(obj);	// fire the callback
 				colorWatch();	   // stop watching color: call the remove() function
 			}
 			else {
